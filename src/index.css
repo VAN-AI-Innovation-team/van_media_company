@@ -1,0 +1,66 @@
+:root {
+  --color-primary: #1463ff;
+  --color-primary-dark: #0846c9;
+  --color-navy: #0b1f33;
+  --color-navy-soft: #173a5c;
+  --color-teal: #0b9a93;
+  --color-sky: #78c8ee;
+  --color-ink: #10283e;
+  --color-muted: #64788b;
+  --color-bg: #f5f8fa;
+  --color-surface: #ffffff;
+  --color-border: #dce5eb;
+  --color-soft-blue: #eaf2ff;
+  --shadow-soft: 0 24px 70px rgb(20 55 84 / 11%);
+  --page-width: 1240px;
+  font-family:
+    Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui,
+    sans-serif;
+  color: var(--color-ink);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--color-bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
