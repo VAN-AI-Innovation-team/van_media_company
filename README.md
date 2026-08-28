@@ -29,13 +29,15 @@ PDF의 `2-5 언론사 미디어 플랫폼` 요구사항과 연결해, 프론트�
 - 5단계 공유: Web Share API와 Clipboard API
 - PDF의 실제 운영 서비스 전환 시: SSR/SSG 프레임워크와 Headless CMS를 별도로 검토해야 함 (`NP-014` SEO·구조화 데이터, PDF 4장의 공개 프런트 권고)
 
-## 현재 구현 범위: Issue 1
+## 현재 구현 범위: Issue 1~2
 
 - 배열/객체로 구성한 기사 데이터 6건
 - `map()`을 사용한 기사 목록 렌더링
 - `useState`와 클릭 이벤트를 사용한 카드형/리스트형 전환
 - `aria-pressed`, 키보드 포커스, 반응형 레이아웃
-- Router, Pagination, 상세 페이지, 외부 공유는 아직 추가하지 않음
+- React Router 기반 `/`, `/articles/:articleId` 경로
+- 기사 카드 링크, 목록 복귀, 존재하지 않는 기사 ID 안내
+- Pagination, 기사 상세 UI, 외부 공유는 아직 추가하지 않음
 
 ## 실행
 
