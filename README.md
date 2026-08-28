@@ -29,15 +29,20 @@ PDF의 `2-5 언론사 미디어 플랫폼` 요구사항과 연결해, 프론트�
 - 5단계 공유: Web Share API와 Clipboard API
 - PDF의 실제 운영 서비스 전환 시: SSR/SSG 프레임워크와 Headless CMS를 별도로 검토해야 함 (`NP-014` SEO·구조화 데이터, PDF 4장의 공개 프런트 권고)
 
-## 현재 구현 범위: Issue 1~2
+## 현재 구현 범위: Issue 1~3
 
-- 배열/객체로 구성한 기사 데이터 6건
+- 원문 URL과 발행일을 확인한 실제 기사 메타데이터 6건
+- 기사 전문을 복제하지 않은 자체 요약과 언론사 원문 링크
 - `map()`을 사용한 기사 목록 렌더링
 - `useState`와 클릭 이벤트를 사용한 카드형/리스트형 전환
 - `aria-pressed`, 키보드 포커스, 반응형 레이아웃
 - React Router 기반 `/`, `/articles/:articleId` 경로
 - 기사 카드 링크, 목록 복귀, 존재하지 않는 기사 ID 안내
-- Pagination, 기사 상세 UI, 외부 공유는 아직 추가하지 않음
+- 한 페이지당 3건, 이전/다음/페이지 번호를 제공하는 Pagination
+- 향후 API의 `page`·`limit` 응답으로 교체할 수 있는 로컬 페이지 데이터 함수
+- 기사 상세 본문 UI와 외부 공유는 아직 추가하지 않음
+
+> 현재는 백엔드 기사 API가 연결되지 않아 검증된 정적 메타데이터를 사용합니다. 실시간으로 기사를 수집하는 기능은 아니며, 운영 단계에서는 저작권과 제휴 범위를 확인한 기사 API 또는 CMS로 교체해야 합니다.
 
 ## 실행
 
@@ -47,3 +52,5 @@ npm run dev
 ```
 
 검증 명령은 `npm run lint`, `npm run build`입니다.
+
+Vercel 배포에서는 `vercel.json`의 SPA rewrite 설정으로 `/articles/:articleId` 직접 접속도 React Router에 연결됩니다.
