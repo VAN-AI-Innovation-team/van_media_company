@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Route, Routes, useParams } from 'react-router'
-import { articles } from './articles.js'
+import { articles, getArticlePage } from './articles.js'
 import './App.css'
 
 function GridIcon() {
@@ -67,11 +67,11 @@ function ArticleItem({ article }) {
           <h2>{article.title}</h2>
           <p className="article-summary">{article.summary}</p>
           <div className="article-meta">
-            <span>{article.reporter}</span>
+            <span>{article.source.name}</span>
             <span className="meta-divider" aria-hidden="true" />
             <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
             <span className="meta-divider" aria-hidden="true" />
-            <span>읽는 시간 {article.readTime}</span>
+            <span>실제 기사 원문 연결</span>
           </div>
         </div>
       </Link>
@@ -79,7 +79,50 @@ function ArticleItem({ article }) {
   )
 }
 
-function ArticleListPage({ viewMode, setViewMode }) {
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+
+  return (
+    <nav className="pagination" aria-label="기사 목록 페이지">
+      <button
+        className="pagination__step"
+        type="button"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        <span aria-hidden="true">←</span> 이전
+      </button>
+
+      <div className="pagination__pages">
+        {pageNumbers.map((pageNumber) => (
+          <button
+            key={pageNumber}
+            className="pagination__number"
+            type="button"
+            aria-current={currentPage === pageNumber ? 'page' : undefined}
+            aria-label={`${pageNumber}페이지`}
+            onClick={() => onPageChange(pageNumber)}
+          >
+            {pageNumber}
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="pagination__step"
+        type="button"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        다음 <span aria-hidden="true">→</span>
+      </button>
+    </nav>
+  )
+}
+
+function ArticleListPage({ currentPage, setCurrentPage, viewMode, setViewMode }) {
+  const articlePage = getArticlePage({ page: currentPage })
+
   return (
     <main id="main-content">
       <section className="intro" aria-labelledby="page-title">
@@ -97,7 +140,10 @@ function ArticleListPage({ viewMode, setViewMode }) {
         <div className="article-toolbar">
           <div>
             <h2 id="articles-title">전체 기사</h2>
-            <p>총 {articles.length}개의 기사</p>
+            <p>
+              총 {articlePage.totalItems}개의 실제 기사 · {articlePage.page} /{' '}
+              {articlePage.totalPages} 페이지
+            </p>
           </div>
 
           <div className="view-toggle" aria-label="기사 보기 방식">
@@ -119,10 +165,16 @@ function ArticleListPage({ viewMode, setViewMode }) {
         </div>
 
         <div className={`article-collection article-collection--${viewMode}`}>
-          {articles.map((article) => (
+          {articlePage.items.map((article) => (
             <ArticleItem key={article.id} article={article} />
           ))}
         </div>
+
+        <Pagination
+          currentPage={articlePage.page}
+          totalPages={articlePage.totalPages}
+          onPageChange={setCurrentPage}
+        />
       </section>
     </main>
   )
@@ -157,13 +209,27 @@ function ArticleRoutePage() {
         <p className="eyebrow">{article.category} · ARTICLE {article.id}</p>
         <h1 id="route-title">{article.title}</h1>
         <div className="route-placeholder__meta">
-          <span>{article.reporter}</span>
+          <span>{article.source.name}</span>
           <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
         </div>
-        <p>기사 본문 화면은 다음 상세 페이지 단계에서 연결합니다.</p>
-        <Link className="back-link" to="/">
-          <span aria-hidden="true">←</span> 전체 기사로 돌아가기
-        </Link>
+        <p>{article.summary}</p>
+        <p className="source-notice">
+          기사 전문은 복제하지 않았습니다. 아래 버튼을 누르면 해당 언론사의
+          실제 원문으로 이동합니다.
+        </p>
+        <div className="route-actions">
+          <a
+            className="source-link"
+            href={article.source.url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {article.source.name} 원문 기사 보기 <span aria-hidden="true">↗</span>
+          </a>
+          <Link className="back-link" to="/">
+            <span aria-hidden="true">←</span> 전체 기사로 돌아가기
+          </Link>
+        </div>
       </section>
     </main>
   )
@@ -171,6 +237,7 @@ function ArticleRoutePage() {
 
 export default function App() {
   const [viewMode, setViewMode] = useState('card')
+  const [currentPage, setCurrentPage] = useState(1)
 
   return (
     <div className="site-shell">
@@ -188,7 +255,14 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={<ArticleListPage viewMode={viewMode} setViewMode={setViewMode} />}
+          element={
+            <ArticleListPage
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+          }
         />
         <Route path="/articles/:articleId" element={<ArticleRoutePage />} />
       </Routes>
