@@ -27,7 +27,9 @@
 .brand:focus-visible,
 .view-button:focus-visible,
 .pagination button:focus-visible,
-.source-link:focus-visible {
+.source-link:focus-visible,
+.share-tools button:focus-visible,
+.share-tools a:focus-visible {
   outline: 3px solid rgb(20 99 255 / 30%);
   outline-offset: 3px;
 }
@@ -703,6 +705,85 @@
   color: var(--color-muted);
   font-size: 0.82rem;
   line-height: 1.7;
+}
+
+.share-tools {
+  display: grid;
+  margin-top: 38px;
+  padding: 28px 0 8px;
+  border-top: 1px solid var(--color-border);
+  gap: 20px;
+}
+
+.share-tools .eyebrow {
+  margin-bottom: 8px;
+}
+
+.share-tools h3 {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+}
+
+.share-tools__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.share-button,
+.share-tools__actions > a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-navy);
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 780;
+  text-decoration: none;
+  transition: 180ms ease;
+}
+
+.share-button {
+  gap: 9px;
+  padding: 0 16px;
+}
+
+.share-button--primary {
+  color: #fff;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.share-tools__actions > a {
+  width: 44px;
+  font-size: 0.9rem;
+  text-transform: none;
+}
+
+.share-button:hover,
+.share-tools__actions > a:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-soft-blue);
+}
+
+.share-button--primary:hover {
+  color: #fff;
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.share-tools__status {
+  min-height: 1.35em;
+  margin: 0;
+  color: #607787;
+  font-size: 0.75rem;
 }
 
 .article-detail .route-actions .back-link {

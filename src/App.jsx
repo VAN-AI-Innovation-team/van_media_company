@@ -6,6 +6,12 @@ import {
   getArticlePage,
   getRelatedArticles,
 } from './articles.js'
+import {
+  applyArticleMetadata,
+  applyNotFoundMetadata,
+  resetArticleMetadata,
+} from './articleMetadata.js'
+import { copyShareUrl, getShareTargets } from './share.js'
 import './App.css'
 
 function GridIcon() {
@@ -96,6 +102,68 @@ function RelatedArticleCard({ article }) {
         </div>
       </Link>
     </article>
+  )
+}
+
+function ShareTools({ article }) {
+  const [status, setStatus] = useState('')
+  const shareUrl = window.location.href
+  const shareTargets = getShareTargets({ title: article.title, url: shareUrl })
+  const supportsNativeShare = typeof navigator.share === 'function'
+
+  const copyCurrentUrl = async (message = '기사 링크를 복사했습니다.') => {
+    try {
+      await copyShareUrl(shareUrl)
+      setStatus(message)
+    } catch {
+      setStatus('링크를 복사하지 못했습니다. 주소창의 URL을 직접 복사해 주세요.')
+    }
+  }
+
+  const shareArticle = async () => {
+    if (!supportsNativeShare) {
+      await copyCurrentUrl('공유 기능을 지원하지 않아 기사 링크를 복사했습니다.')
+      return
+    }
+
+    try {
+      await navigator.share({
+        title: article.title,
+        text: article.summary,
+        url: shareUrl,
+      })
+      setStatus('공유가 완료되었습니다.')
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        setStatus('공유를 취소했습니다.')
+        return
+      }
+
+      await copyCurrentUrl('공유 창을 열 수 없어 기사 링크를 복사했습니다.')
+    }
+  }
+
+  return (
+    <section className="share-tools" aria-labelledby="share-tools-title">
+      <div>
+        <p className="eyebrow">SHARE ARTICLE</p>
+        <h3 id="share-tools-title">이 기사를 공유하세요</h3>
+      </div>
+      <div className="share-tools__actions">
+        <button type="button" className="share-button share-button--primary" onClick={shareArticle}>
+          <span aria-hidden="true">↗</span>
+          {supportsNativeShare ? '공유하기' : '링크 복사'}
+        </button>
+        {supportsNativeShare && (
+          <button type="button" className="share-button" onClick={() => copyCurrentUrl()}>
+            <span aria-hidden="true">⧉</span> 링크 복사
+          </button>
+        )}
+        <a href={shareTargets.x} target="_blank" rel="noreferrer" aria-label="X에서 기사 공유하기">X</a>
+        <a href={shareTargets.facebook} target="_blank" rel="noreferrer" aria-label="Facebook에서 기사 공유하기">f</a>
+      </div>
+      <p className="share-tools__status" role="status" aria-live="polite">{status}</p>
+    </section>
   )
 }
 
@@ -209,6 +277,13 @@ function ArticleRoutePage() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [articleId])
 
+  useEffect(() => {
+    if (article) applyArticleMetadata(article)
+    else applyNotFoundMetadata()
+
+    return resetArticleMetadata
+  }, [article])
+
   if (!article) {
     return (
       <main id="main-content" className="route-placeholder">
@@ -280,6 +355,7 @@ function ArticleRoutePage() {
               <strong>원문 이용 안내</strong>
               <p>기사 전문은 복제하지 않았습니다. 아래 버튼을 누르면 해당 언론사의 실제 원문으로 이동합니다.</p>
             </div>
+            <ShareTools key={article.id} article={article} />
             <div className="route-actions">
               <a
                 className="source-link"
