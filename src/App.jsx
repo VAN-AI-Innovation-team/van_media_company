@@ -1,6 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Route, Routes, useParams } from 'react-router'
-import { articles, getArticlePage } from './articles.js'
+import {
+  articles,
+  getArticleById,
+  getArticlePage,
+  getRelatedArticles,
+} from './articles.js'
 import './App.css'
 
 function GridIcon() {
@@ -73,6 +78,21 @@ function ArticleItem({ article }) {
             <span className="meta-divider" aria-hidden="true" />
             <span>실제 기사 원문 연결</span>
           </div>
+        </div>
+      </Link>
+    </article>
+  )
+}
+
+function RelatedArticleCard({ article }) {
+  return (
+    <article className="related-article" style={{ '--article-accent': article.accent }}>
+      <Link to={`/articles/${article.id}`}>
+        <ArticleVisual article={article} />
+        <div>
+          <span>{article.category}</span>
+          <h3>{article.title}</h3>
+          <p>{article.source.name} · {article.publishedLabel}</p>
         </div>
       </Link>
     </article>
@@ -182,7 +202,12 @@ function ArticleListPage({ currentPage, setCurrentPage, viewMode, setViewMode })
 
 function ArticleRoutePage() {
   const { articleId } = useParams()
-  const article = articles.find((item) => String(item.id) === articleId)
+  const article = getArticleById(articleId)
+  const relatedArticles = getRelatedArticles(articleId)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [articleId])
 
   if (!article) {
     return (
@@ -194,41 +219,96 @@ function ArticleRoutePage() {
           <Link className="back-link" to="/">
             <span aria-hidden="true">←</span> 전체 기사로 돌아가기
           </Link>
+          <div className="not-found-suggestions">
+            <p>대신 최근 기사를 확인해 보세요.</p>
+            <ul>
+              {articles.slice(0, 3).map((item) => (
+                <li key={item.id}><Link to={`/articles/${item.id}`}>{item.title}</Link></li>
+              ))}
+            </ul>
+          </div>
         </section>
       </main>
     )
   }
 
   return (
-    <main id="main-content" className="route-placeholder">
-      <section
-        className="route-placeholder__panel"
-        aria-labelledby="route-title"
-        style={{ '--article-accent': article.accent }}
-      >
-        <p className="eyebrow">{article.category} · ARTICLE {article.id}</p>
-        <h1 id="route-title">{article.title}</h1>
-        <div className="route-placeholder__meta">
-          <span>{article.source.name}</span>
-          <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
+    <main
+      id="main-content"
+      className="article-detail"
+      style={{ '--article-accent': article.accent }}
+    >
+      <nav className="article-breadcrumb" aria-label="현재 위치">
+        <Link to="/">전체 기사</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{article.category}</span>
+      </nav>
+
+      <article className="article-detail__article" aria-labelledby="article-title">
+        <header className="article-detail__header">
+          <p className="eyebrow">{article.category} · ARTICLE {article.id}</p>
+          <h1 id="article-title">{article.title}</h1>
+          <div className="article-detail__meta">
+            <span><small>출처</small>{article.source.name}</span>
+            <time dateTime={article.publishedAt}><small>발행일</small>{article.publishedLabel}</time>
+          </div>
+          <p className="article-detail__lead">{article.summary}</p>
+        </header>
+
+        <ArticleVisual article={article} />
+
+        <div className="article-detail__body">
+          <aside aria-label="기사 정보">
+            <p>ARTICLE INFO</p>
+            <dl>
+              <div><dt>분야</dt><dd>{article.category}</dd></div>
+              <div><dt>출처</dt><dd>{article.source.name}</dd></div>
+              <div><dt>게시 기준</dt><dd>{article.publishedLabel}</dd></div>
+            </dl>
+          </aside>
+          <section aria-labelledby="article-summary-title">
+            <p className="eyebrow">EDITOR&apos;S SUMMARY</p>
+            <h2 id="article-summary-title">기사 핵심 요약</h2>
+            <p>{article.summary}</p>
+            <div className="article-highlights" aria-labelledby="article-highlights-title">
+              <h3 id="article-highlights-title">핵심 포인트</h3>
+              <ul>
+                {article.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+              </ul>
+            </div>
+            <div className="source-notice">
+              <strong>원문 이용 안내</strong>
+              <p>기사 전문은 복제하지 않았습니다. 아래 버튼을 누르면 해당 언론사의 실제 원문으로 이동합니다.</p>
+            </div>
+            <div className="route-actions">
+              <a
+                className="source-link"
+                href={article.source.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {article.source.name} 원문 기사 보기 <span aria-hidden="true">↗</span>
+              </a>
+              <Link className="back-link" to="/">
+                <span aria-hidden="true">←</span> 전체 기사로 돌아가기
+              </Link>
+            </div>
+          </section>
         </div>
-        <p>{article.summary}</p>
-        <p className="source-notice">
-          기사 전문은 복제하지 않았습니다. 아래 버튼을 누르면 해당 언론사의
-          실제 원문으로 이동합니다.
-        </p>
-        <div className="route-actions">
-          <a
-            className="source-link"
-            href={article.source.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {article.source.name} 원문 기사 보기 <span aria-hidden="true">↗</span>
-          </a>
-          <Link className="back-link" to="/">
-            <span aria-hidden="true">←</span> 전체 기사로 돌아가기
-          </Link>
+      </article>
+
+      <section className="related-stories" aria-labelledby="related-stories-title">
+        <div className="related-stories__heading">
+          <div>
+            <p className="eyebrow">RELATED STORIES</p>
+            <h2 id="related-stories-title">함께 읽을 기사</h2>
+          </div>
+          <Link to="/">전체 기사 보기 <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="related-stories__grid">
+          {relatedArticles.map((relatedArticle) => (
+            <RelatedArticleCard key={relatedArticle.id} article={relatedArticle} />
+          ))}
         </div>
       </section>
     </main>

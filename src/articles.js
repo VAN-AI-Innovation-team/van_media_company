@@ -9,6 +9,10 @@ export const articles = [
     title: '코스피, 엔비디아 호실적에 1%대 상승…금리인상에 상승폭 축소(종합)',
     summary:
       '엔비디아 실적이 국내 반도체주와 코스피를 끌어올렸지만, 한국은행의 기준금리 인상 발표 뒤 상승 폭은 줄었다.',
+    highlights: [
+      '엔비디아의 호실적이 국내 반도체주와 코스피 상승을 이끌었다.',
+      '한국은행의 기준금리 인상 발표 뒤 지수의 상승 폭은 축소됐다.',
+    ],
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
@@ -24,6 +28,10 @@ export const articles = [
     title: '[속보] 한은, 올해 성장률 전망 2.6%→3.3% 상향',
     summary:
       '한국은행이 반도체 수출과 정보기술 설비투자 호조, 소비 회복을 반영해 올해 성장률 전망을 높였다.',
+    highlights: [
+      '한국은행이 올해 성장률 전망을 2.6%에서 3.3%로 상향했다.',
+      '반도체 수출과 정보기술 설비투자, 소비 회복이 전망 조정의 배경으로 제시됐다.',
+    ],
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
@@ -39,6 +47,10 @@ export const articles = [
     title: '힘든 내시경·불편한 대변 채취, 안해도 된다?···“대장암 진단, 피만 뽑아도 정확도 높아”',
     summary:
       '국내 연구진이 혈액 속 세포유리DNA를 AI로 분석하는 대장암 선별 방법을 시험해 높은 진단 정확도를 확인했다.',
+    highlights: [
+      '혈액 속 세포유리DNA를 AI로 분석하는 대장암 선별 방법이 시험됐다.',
+      '내시경이나 대변 채취의 부담을 보완할 가능성과 진단 정확도가 핵심이다.',
+    ],
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
@@ -54,6 +66,10 @@ export const articles = [
     title: '의료혁신위, ‘지역·일차의료 혁신’ 추진…“건강 필요도 따라 재정 배분해야”',
     summary:
       '의료혁신위원회가 동네 의료기관과 보건소의 역할을 재편하고 지역별 건강 수요에 따른 재정 배분 방안을 제안했다.',
+    highlights: [
+      '지역 의료기관과 보건소의 역할을 새롭게 구성하는 방안이 논의됐다.',
+      '지역별 건강 필요도에 맞춘 재정 배분이 주요 제안으로 제시됐다.',
+    ],
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
@@ -69,6 +85,10 @@ export const articles = [
     title: 'AI 두뇌로 달리는 전기차·로보택시… 진화하는 미래 모빌리티',
     summary:
       '미래 모빌리티 전시회를 통해 전기차 경쟁이 주행거리에서 소프트웨어와 자율 판단 능력 중심으로 이동하는 흐름을 살펴본다.',
+    highlights: [
+      '전기차와 로보택시의 경쟁 기준이 소프트웨어와 AI 역량으로 이동하고 있다.',
+      '주행거리뿐 아니라 차량의 자율 판단 능력이 미래 모빌리티의 차별점으로 다뤄졌다.',
+    ],
     publishedAt: '2026-08-26',
     publishedLabel: '2026.08.26',
     source: {
@@ -84,6 +104,10 @@ export const articles = [
     title: "AI도 '인간 중심'으로…과기부, '대한민국 AI 윤리원칙' 제정",
     summary:
       '정부가 인간 존엄과 공공선, 지속가능성을 중심으로 AI 개발자와 서비스 제공자, 이용자가 함께 따를 원칙을 마련했다.',
+    highlights: [
+      'AI 윤리원칙은 인간 존엄과 공공선, 지속가능성을 핵심 가치로 제시한다.',
+      '개발자와 서비스 제공자뿐 아니라 이용자도 원칙의 적용 대상으로 다뤄진다.',
+    ],
     publishedAt: '2026-08-24',
     publishedLabel: '2026.08.24',
     source: {
@@ -108,4 +132,27 @@ export function getArticlePage({ page = 1, limit = ARTICLES_PER_PAGE } = {}) {
     totalItems,
     totalPages,
   }
+}
+
+export function getArticleById(articleId) {
+  return articles.find((article) => String(article.id) === String(articleId))
+}
+
+export function getRelatedArticles(articleId, limit = 3) {
+  const currentArticle = getArticleById(articleId)
+  if (!currentArticle) return []
+
+  const currentTopics = new Set(currentArticle.category.split('·'))
+
+  return articles
+    .filter((article) => article.id !== currentArticle.id)
+    .map((article) => ({
+      article,
+      relevance: article.category
+        .split('·')
+        .filter((topic) => currentTopics.has(topic)).length,
+    }))
+    .sort((left, right) => right.relevance - left.relevance || right.article.id - left.article.id)
+    .slice(0, limit)
+    .map(({ article }) => article)
 }
