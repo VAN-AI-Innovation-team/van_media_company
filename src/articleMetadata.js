@@ -1,5 +1,4 @@
-const DEFAULT_TITLE = 'VAN NEWS · 오늘의 주요 기사'
-const DEFAULT_DESCRIPTION = '변화를 읽고 기록하는 VAN NEWS 미디어 플랫폼입니다.'
+import { getMessages, normalizeLanguage } from './i18n.js'
 
 function setMeta(attribute, key, content) {
   let element = document.head.querySelector(`meta[${attribute}="${key}"]`)
@@ -29,7 +28,7 @@ function setCanonical(url) {
   canonical.setAttribute('href', url)
 }
 
-function setStructuredArticle(article, url) {
+function setStructuredArticle(article, url, language) {
   let script = document.head.querySelector('#article-structured-data')
 
   if (!script) {
@@ -45,7 +44,7 @@ function setStructuredArticle(article, url) {
     headline: article.title,
     description: article.summary,
     datePublished: article.publishedAt,
-    inLanguage: 'ko-KR',
+    inLanguage: language === 'en' ? 'en-US' : 'ko-KR',
     mainEntityOfPage: url,
     url,
     articleSection: article.category,
@@ -58,8 +57,10 @@ function setStructuredArticle(article, url) {
   })
 }
 
-export function applyArticleMetadata(article) {
-  const url = window.location.href.split('#')[0]
+export function applyArticleMetadata(article, requestedLanguage = 'ko') {
+  const language = normalizeLanguage(requestedLanguage)
+  const copy = getMessages(language)
+  const url = new URL(window.location.pathname, window.location.origin).href
   const title = `${article.title} | VAN NEWS`
 
   document.title = title
@@ -67,7 +68,7 @@ export function applyArticleMetadata(article) {
   setMeta('name', 'description', article.summary)
   setMeta('property', 'og:type', 'article')
   setMeta('property', 'og:site_name', 'VAN NEWS')
-  setMeta('property', 'og:locale', 'ko_KR')
+  setMeta('property', 'og:locale', copy.locale)
   setMeta('property', 'og:title', title)
   setMeta('property', 'og:description', article.summary)
   setMeta('property', 'og:url', url)
@@ -76,13 +77,15 @@ export function applyArticleMetadata(article) {
   setMeta('name', 'twitter:card', 'summary')
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', article.summary)
-  setStructuredArticle(article, url)
+  setStructuredArticle(article, url, language)
 }
 
-export function applyNotFoundMetadata() {
-  const url = window.location.href.split('#')[0]
-  const title = '기사를 찾을 수 없습니다 | VAN NEWS'
-  const description = '요청한 기사 주소를 찾을 수 없습니다.'
+export function applyNotFoundMetadata(requestedLanguage = 'ko') {
+  const language = normalizeLanguage(requestedLanguage)
+  const copy = getMessages(language)
+  const url = new URL(window.location.pathname, window.location.origin).href
+  const title = copy.notFoundMetadataTitle
+  const description = copy.notFoundMetadataDescription
 
   document.title = title
   setCanonical(url)
@@ -90,6 +93,7 @@ export function applyNotFoundMetadata() {
   setMeta('property', 'og:title', title)
   setMeta('property', 'og:description', description)
   setMeta('property', 'og:type', 'website')
+  setMeta('property', 'og:locale', copy.locale)
   setMeta('property', 'og:url', url)
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
@@ -98,21 +102,23 @@ export function applyNotFoundMetadata() {
   document.head.querySelector('#article-structured-data')?.remove()
 }
 
-export function resetArticleMetadata() {
-  const homeUrl = new URL('/', window.location.origin).href
+export function resetArticleMetadata(requestedLanguage = 'ko') {
+  const language = normalizeLanguage(requestedLanguage)
+  const copy = getMessages(language)
+  const homeUrl = new URL(language === 'en' ? '/en/' : '/', window.location.origin).href
 
-  document.title = DEFAULT_TITLE
+  document.title = copy.defaultTitle
   setCanonical(homeUrl)
-  setMeta('name', 'description', DEFAULT_DESCRIPTION)
+  setMeta('name', 'description', copy.defaultDescription)
   setMeta('property', 'og:type', 'website')
   setMeta('property', 'og:site_name', 'VAN NEWS')
-  setMeta('property', 'og:locale', 'ko_KR')
-  setMeta('property', 'og:title', DEFAULT_TITLE)
-  setMeta('property', 'og:description', DEFAULT_DESCRIPTION)
+  setMeta('property', 'og:locale', copy.locale)
+  setMeta('property', 'og:title', copy.defaultTitle)
+  setMeta('property', 'og:description', copy.defaultDescription)
   setMeta('property', 'og:url', homeUrl)
   setMeta('name', 'twitter:card', 'summary')
-  setMeta('name', 'twitter:title', DEFAULT_TITLE)
-  setMeta('name', 'twitter:description', DEFAULT_DESCRIPTION)
+  setMeta('name', 'twitter:title', copy.defaultTitle)
+  setMeta('name', 'twitter:description', copy.defaultDescription)
   removeMeta('property', 'article:published_time')
   removeMeta('property', 'article:section')
   document.head.querySelector('#article-structured-data')?.remove()

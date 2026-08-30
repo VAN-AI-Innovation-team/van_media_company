@@ -3,10 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-static-pages.js",
     "lint": "oxlint",
+    "test": "node --test src/articles.test.js src/share.test.js",
+    "test:static": "node --test scripts/static-pages.test.js",
+    "check": "npm run lint && npm run test && npm run build && npm run test:static",
     "preview": "vite preview"
   },
   "dependencies": {
