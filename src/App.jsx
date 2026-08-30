@@ -1,7 +1,62 @@
-import { useState } from 'react'
-import { Link, Route, Routes, useParams } from 'react-router'
-import { articles, getArticlePage } from './articles.js'
+import { useEffect, useState } from 'react'
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router'
+import {
+  getAllArticles,
+  getArticleById,
+  getArticlePage,
+  getRelatedArticles,
+} from './articles.js'
+import {
+  applyArticleMetadata,
+  applyNotFoundMetadata,
+  resetArticleMetadata,
+} from './articleMetadata.js'
+import { getMessages, normalizeLanguage } from './i18n.js'
+import { copyShareUrl, getShareTargets } from './share.js'
 import './App.css'
+
+function getPageNumber(value) {
+  const page = Number.parseInt(value ?? '1', 10)
+  return Number.isFinite(page) && page > 0 ? page : 1
+}
+
+function getStateQuery({ page, viewMode }) {
+  const params = new URLSearchParams()
+
+  if (page > 1) params.set('page', String(page))
+  if (viewMode === 'list') params.set('view', 'list')
+
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
+
+function getListUrl(state) {
+  const pathname = state.language === 'en' ? '/en/' : '/'
+  return `${pathname}${getStateQuery(state)}`
+}
+
+function getArticleUrl(articleId, state) {
+  const prefix = state.language === 'en' ? '/en' : ''
+  return `${prefix}/articles/${articleId}/`
+}
+
+function getLocalizedPath(pathname, language) {
+  const pathWithoutLanguage = pathname.replace(/^\/en(?=\/|$)/, '') || '/'
+
+  if (language === 'en') {
+    return pathWithoutLanguage === '/' ? '/en/' : `/en${pathWithoutLanguage}`
+  }
+
+  return pathWithoutLanguage
+}
 
 function GridIcon() {
   return (
@@ -22,6 +77,52 @@ function ListIcon() {
   )
 }
 
+function ShareIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" />
+    </svg>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <rect x="8" y="8" width="11" height="11" rx="2" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </svg>
+  )
+}
+
+function XIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M5 4l14 16M19 4 5 20" />
+    </svg>
+  )
+}
+
+function FacebookIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M14 21v-8h3l.5-4H14V7.2c0-1.2.6-2.2 2.4-2.2H18V1.5c-.7-.1-1.8-.2-3-.2-3 0-5 1.8-5 5.2V9H7v4h3v8" />
+    </svg>
+  )
+}
+
+function InstagramIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle className="instagram-dot" cx="17.4" cy="6.7" r="1" />
+    </svg>
+  )
+}
+
 function ViewButton({ active, children, icon, onClick }) {
   return (
     <button
@@ -36,7 +137,55 @@ function ViewButton({ active, children, icon, onClick }) {
   )
 }
 
-function ArticleVisual({ article }) {
+function LanguageSwitch({ language, onLanguageChange, copy }) {
+  return (
+    <div className="language-switch" role="group" aria-label={copy.languageLabel}>
+      <button
+        type="button"
+        aria-label={copy.korean}
+        aria-pressed={language === 'ko'}
+        onClick={() => onLanguageChange('ko')}
+      >
+        KO
+      </button>
+      <button
+        type="button"
+        aria-label={copy.english}
+        aria-pressed={language === 'en'}
+        onClick={() => onLanguageChange('en')}
+      >
+        EN
+      </button>
+    </div>
+  )
+}
+
+function ArticleVisual({ article, detail = false }) {
+  if (article.image) {
+    return (
+      <figure className={`article-visual article-visual--photo${detail ? ' article-visual--detail' : ''}`}>
+        <img
+          src={article.image.src}
+          alt={article.image.alt}
+          width={article.image.width}
+          height={article.image.height}
+          style={{
+            '--image-position': article.image.objectPosition ?? '50% 50%',
+            '--image-fit': detail ? 'contain' : article.image.cardFit ?? 'cover',
+          }}
+          loading={detail ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+        {detail && (article.image.caption || article.image.credit) && (
+          <figcaption className="article-visual__caption">
+            {article.image.caption && <span>{article.image.caption}</span>}
+            {article.image.credit && <small>{article.image.credit}</small>}
+          </figcaption>
+        )}
+      </figure>
+    )
+  }
+
   return (
     <div
       className={`article-visual article-visual--${article.visual}`}
@@ -50,7 +199,44 @@ function ArticleVisual({ article }) {
   )
 }
 
-function ArticleItem({ article }) {
+function ArticleStory({ article }) {
+  const inlineImages = article.inlineImages ?? []
+
+  return (
+    <div className="article-story">
+      {article.body.flatMap((paragraph, index) => {
+        const imagesAfterParagraph = inlineImages.filter(
+          (image) => image.afterParagraph === index + 1,
+        )
+
+        return [
+          <p key={`paragraph-${index}`}>{paragraph}</p>,
+          ...imagesAfterParagraph.map((image) => (
+            <figure className="article-story__media" key={image.id ?? image.src}>
+              <img
+                src={image.src}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                style={{ '--image-position': image.objectPosition ?? '50% 50%' }}
+                loading="lazy"
+                decoding="async"
+              />
+              {(image.caption || image.credit) && (
+                <figcaption>
+                  {image.caption && <span>{image.caption}</span>}
+                  {image.credit && <small>{image.credit}</small>}
+                </figcaption>
+              )}
+            </figure>
+          )),
+        ]
+      })}
+    </div>
+  )
+}
+
+function ArticleItem({ article, listState, copy }) {
   return (
     <article
       className="article-item"
@@ -58,8 +244,9 @@ function ArticleItem({ article }) {
     >
       <Link
         className="article-link"
-        to={`/articles/${article.id}`}
-        aria-label={`${article.title} 기사 보기`}
+        to={getArticleUrl(article.id, listState)}
+        state={{ listUrl: getListUrl(listState) }}
+        aria-label={copy.articleLinkLabel(article.title)}
       >
         <ArticleVisual article={article} />
         <div className="article-copy">
@@ -67,11 +254,11 @@ function ArticleItem({ article }) {
           <h2>{article.title}</h2>
           <p className="article-summary">{article.summary}</p>
           <div className="article-meta">
-            <span>{article.source.name}</span>
+            <span>{article.author.name}</span>
             <span className="meta-divider" aria-hidden="true" />
             <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
             <span className="meta-divider" aria-hidden="true" />
-            <span>실제 기사 원문 연결</span>
+            <span>{copy.readFullArticle}</span>
           </div>
         </div>
       </Link>
@@ -79,18 +266,125 @@ function ArticleItem({ article }) {
   )
 }
 
-function Pagination({ currentPage, totalPages, onPageChange }) {
+function RelatedArticleCard({ article, listState, listUrl }) {
+  return (
+    <article className="related-article" style={{ '--article-accent': article.accent }}>
+      <Link to={getArticleUrl(article.id, listState)} state={{ listUrl }}>
+        <ArticleVisual article={article} />
+        <div>
+          <span>{article.category}</span>
+          <h3>{article.title}</h3>
+          <p>{article.author.name} · {article.publishedLabel}</p>
+        </div>
+      </Link>
+    </article>
+  )
+}
+
+function ShareTools({ article, copy }) {
+  const [status, setStatus] = useState('')
+  const shareUrl = new URL(window.location.pathname, window.location.origin).href
+  const shareTargets = getShareTargets({ title: article.title, url: shareUrl })
+  const supportsNativeShare = typeof navigator.share === 'function'
+
+  const copyCurrentUrl = async (message = copy.copied) => {
+    try {
+      await copyShareUrl(shareUrl)
+      setStatus(message)
+    } catch {
+      setStatus(copy.copyFailed)
+    }
+  }
+
+  const shareArticle = async () => {
+    if (!supportsNativeShare) {
+      await copyCurrentUrl(copy.shareUnsupported)
+      return
+    }
+
+    try {
+      await navigator.share({
+        title: article.title,
+        text: article.summary,
+        url: shareUrl,
+      })
+      setStatus(copy.shared)
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        setStatus(copy.shareCanceled)
+        return
+      }
+
+      await copyCurrentUrl(copy.shareFallback)
+    }
+  }
+
+  return (
+    <section className="share-tools" aria-labelledby="share-tools-title">
+      <div>
+        <p className="eyebrow">{copy.shareEyebrow}</p>
+        <h3 id="share-tools-title">{copy.shareTitle}</h3>
+      </div>
+      <div className="share-tools__actions">
+        <button type="button" className="share-button share-button--primary" onClick={shareArticle}>
+          <ShareIcon />
+          {supportsNativeShare ? copy.share : copy.copyLink}
+        </button>
+        {supportsNativeShare && (
+          <button type="button" className="share-button" onClick={() => copyCurrentUrl()}>
+            <CopyIcon /> {copy.copyLink}
+          </button>
+        )}
+        <a
+          className="social-share social-share--x"
+          href={shareTargets.x}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.xShareLabel}
+          title={copy.xShareLabel}
+        >
+          <XIcon />
+        </a>
+        <a
+          className="social-share social-share--facebook"
+          href={shareTargets.facebook}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.facebookShareLabel}
+          title={copy.facebookShareLabel}
+        >
+          <FacebookIcon />
+        </a>
+        <a
+          className="social-share social-share--instagram"
+          href={shareTargets.instagram}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.instagramShareLabel}
+          title={copy.instagramShareLabel}
+          onClick={() => { void copyCurrentUrl(copy.instagramCopied) }}
+        >
+          <InstagramIcon />
+        </a>
+      </div>
+      <p className="share-tools__hint">{copy.shareHint}</p>
+      <p className="share-tools__status" role="status" aria-live="polite">{status}</p>
+    </section>
+  )
+}
+
+function Pagination({ currentPage, totalPages, onPageChange, copy }) {
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
 
   return (
-    <nav className="pagination" aria-label="기사 목록 페이지">
+    <nav className="pagination" aria-label={copy.paginationLabel}>
       <button
         className="pagination__step"
         type="button"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
       >
-        <span aria-hidden="true">←</span> 이전
+        <span aria-hidden="true">←</span> {copy.previous}
       </button>
 
       <div className="pagination__pages">
@@ -100,7 +394,7 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
             className="pagination__number"
             type="button"
             aria-current={currentPage === pageNumber ? 'page' : undefined}
-            aria-label={`${pageNumber}페이지`}
+            aria-label={copy.pageLabel(pageNumber)}
             onClick={() => onPageChange(pageNumber)}
           >
             {pageNumber}
@@ -114,121 +408,208 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
       >
-        다음 <span aria-hidden="true">→</span>
+        {copy.next} <span aria-hidden="true">→</span>
       </button>
     </nav>
   )
 }
 
-function ArticleListPage({ currentPage, setCurrentPage, viewMode, setViewMode }) {
-  const articlePage = getArticlePage({ page: currentPage })
+function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setViewMode }) {
+  const copy = getMessages(language)
+  const articlePage = getArticlePage({ page: currentPage, language })
+  const displayedArticles = viewMode === 'card'
+    ? getAllArticles(language)
+    : articlePage.items
+  const listState = {
+    language,
+    page: viewMode === 'card' ? 1 : articlePage.page,
+    viewMode,
+  }
+
+  useEffect(() => {
+    resetArticleMetadata(language)
+  }, [language])
 
   return (
     <main id="main-content">
       <section className="intro" aria-labelledby="page-title">
-        <p className="eyebrow">LATEST STORIES</p>
+        <p className="eyebrow">{copy.latestStories}</p>
         <h1 id="page-title">
-          오늘의 주요 기사
-          <span>변화를 읽고, 기록합니다.</span>
+          {copy.heroTitle}
+          <span>{copy.heroAccent}</span>
         </h1>
-        <p className="intro-copy">
-          우리 곁에서 시작된 변화와 그 변화를 만드는 사람들의 이야기를 전합니다.
-        </p>
+        <p className="intro-copy">{copy.heroDescription}</p>
       </section>
 
       <section className="articles" aria-labelledby="articles-title">
         <div className="article-toolbar">
           <div>
-            <h2 id="articles-title">전체 기사</h2>
+            <h2 id="articles-title">{copy.allArticles}</h2>
             <p>
-              총 {articlePage.totalItems}개의 실제 기사 · {articlePage.page} /{' '}
-              {articlePage.totalPages} 페이지
+              {viewMode === 'card'
+                ? copy.articleCountAll(articlePage.totalItems)
+                : copy.articleCount(articlePage)}
             </p>
           </div>
 
-          <div className="view-toggle" aria-label="기사 보기 방식">
+          <div className="view-toggle" aria-label={copy.viewModeLabel}>
             <ViewButton
               active={viewMode === 'card'}
               icon={<GridIcon />}
               onClick={() => setViewMode('card')}
             >
-              카드형
+              {copy.cardView}
             </ViewButton>
             <ViewButton
               active={viewMode === 'list'}
               icon={<ListIcon />}
               onClick={() => setViewMode('list')}
             >
-              리스트형
+              {copy.listView}
             </ViewButton>
           </div>
         </div>
 
         <div className={`article-collection article-collection--${viewMode}`}>
-          {articlePage.items.map((article) => (
-            <ArticleItem key={article.id} article={article} />
+          {displayedArticles.map((article) => (
+            <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
           ))}
         </div>
 
-        <Pagination
-          currentPage={articlePage.page}
-          totalPages={articlePage.totalPages}
-          onPageChange={setCurrentPage}
-        />
+        {viewMode === 'list' && (
+          <Pagination
+            currentPage={articlePage.page}
+            totalPages={articlePage.totalPages}
+            onPageChange={setCurrentPage}
+            copy={copy}
+          />
+        )}
       </section>
     </main>
   )
 }
 
-function ArticleRoutePage() {
+function ArticleRoutePage({ language, listState }) {
   const { articleId } = useParams()
-  const article = articles.find((item) => String(item.id) === articleId)
+  const location = useLocation()
+  const copy = getMessages(language)
+  const article = getArticleById(articleId, language)
+  const relatedArticles = getRelatedArticles(articleId, 3, language)
+  const recentArticles = getArticlePage({ page: 1, limit: 3, language }).items
+  const listUrl = location.state?.listUrl ?? getListUrl({
+    language,
+    page: 1,
+    viewMode: 'card',
+  })
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [articleId])
+
+  useEffect(() => {
+    if (article) applyArticleMetadata(article, language)
+    else applyNotFoundMetadata(language)
+
+    return () => resetArticleMetadata(language)
+  }, [article, language])
 
   if (!article) {
     return (
       <main id="main-content" className="route-placeholder">
         <section className="route-placeholder__panel" aria-labelledby="route-title">
-          <p className="eyebrow">ARTICLE NOT FOUND</p>
-          <h1 id="route-title">요청한 기사를 찾을 수 없습니다.</h1>
-          <p>주소를 다시 확인하거나 전체 기사 목록으로 돌아가 주세요.</p>
-          <Link className="back-link" to="/">
-            <span aria-hidden="true">←</span> 전체 기사로 돌아가기
+          <p className="eyebrow">{copy.notFoundEyebrow}</p>
+          <h1 id="route-title">{copy.notFoundTitle}</h1>
+          <p>{copy.notFoundDescription}</p>
+          <Link className="back-link" to={listUrl}>
+            <span aria-hidden="true">←</span> {copy.backToArticles}
           </Link>
+          <div className="not-found-suggestions">
+            <p>{copy.recentSuggestion}</p>
+            <ul>
+              {recentArticles.map((item) => (
+                <li key={item.id}>
+                  <Link to={getArticleUrl(item.id, listState)} state={{ listUrl }}>
+                    {item.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       </main>
     )
   }
 
   return (
-    <main id="main-content" className="route-placeholder">
-      <section
-        className="route-placeholder__panel"
-        aria-labelledby="route-title"
-        style={{ '--article-accent': article.accent }}
-      >
-        <p className="eyebrow">{article.category} · ARTICLE {article.id}</p>
-        <h1 id="route-title">{article.title}</h1>
-        <div className="route-placeholder__meta">
-          <span>{article.source.name}</span>
-          <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
+    <main
+      id="main-content"
+      className="article-detail"
+      style={{ '--article-accent': article.accent }}
+    >
+      <nav className="article-breadcrumb" aria-label={copy.breadcrumbLabel}>
+        <Link to={listUrl}>{copy.allArticles}</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{article.category}</span>
+      </nav>
+
+      <article className="article-detail__article" aria-labelledby="article-title">
+        <header className="article-detail__header">
+          <p className="eyebrow">{article.category} · {copy.articleLabel} {article.id}</p>
+          <h1 id="article-title">{article.title}</h1>
+          <div className="article-detail__meta">
+            <span><small>{copy.author}</small>{article.author.name}</span>
+            <time dateTime={article.publishedAt}><small>{copy.published}</small>{article.publishedLabel}</time>
+          </div>
+        </header>
+
+        <ArticleVisual article={article} detail />
+
+        <div className="article-detail__body">
+          <aside aria-label={copy.articleInfo}>
+            <p>{copy.articleInfo.toUpperCase()}</p>
+            <dl>
+              <div><dt>{copy.category}</dt><dd>{article.category}</dd></div>
+              <div><dt>{copy.author}</dt><dd>{article.author.name}</dd></div>
+              <div><dt>{copy.publishedBasis}</dt><dd>{article.publishedLabel}</dd></div>
+            </dl>
+          </aside>
+          <section aria-labelledby="article-body-title">
+            <p className="eyebrow">{copy.articleBodyEyebrow}</p>
+            <h2 id="article-body-title">{copy.articleBodyTitle}</h2>
+            <ArticleStory article={article} />
+            <div className="article-highlights" aria-labelledby="article-highlights-title">
+              <h3 id="article-highlights-title">{copy.highlights}</h3>
+              <ul>
+                {article.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+              </ul>
+            </div>
+            <ShareTools key={`${article.id}-${language}`} article={article} copy={copy} />
+            <div className="route-actions">
+              <Link className="back-link" to={listUrl}>
+                <span aria-hidden="true">←</span> {copy.backToArticles}
+              </Link>
+            </div>
+          </section>
         </div>
-        <p>{article.summary}</p>
-        <p className="source-notice">
-          기사 전문은 복제하지 않았습니다. 아래 버튼을 누르면 해당 언론사의
-          실제 원문으로 이동합니다.
-        </p>
-        <div className="route-actions">
-          <a
-            className="source-link"
-            href={article.source.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {article.source.name} 원문 기사 보기 <span aria-hidden="true">↗</span>
-          </a>
-          <Link className="back-link" to="/">
-            <span aria-hidden="true">←</span> 전체 기사로 돌아가기
-          </Link>
+      </article>
+
+      <section className="related-stories" aria-labelledby="related-stories-title">
+        <div className="related-stories__heading">
+          <div>
+            <p className="eyebrow">RELATED STORIES</p>
+            <h2 id="related-stories-title">{copy.relatedStories}</h2>
+          </div>
+          <Link to={listUrl}>{copy.viewAllArticles} <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="related-stories__grid">
+          {relatedArticles.map((relatedArticle) => (
+            <RelatedArticleCard
+              key={relatedArticle.id}
+              article={relatedArticle}
+              listState={listState}
+              listUrl={listUrl}
+            />
+          ))}
         </div>
       </section>
     </main>
@@ -236,20 +617,70 @@ function ArticleRoutePage() {
 }
 
 export default function App() {
-  const [viewMode, setViewMode] = useState('card')
-  const [currentPage, setCurrentPage] = useState(1)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const language = normalizeLanguage(location.pathname.startsWith('/en') ? 'en' : 'ko')
+  const currentPage = getArticlePage({
+    page: getPageNumber(searchParams.get('page')),
+  }).page
+  const viewMode = searchParams.get('view') === 'list' ? 'list' : 'card'
+  const copy = getMessages(language)
+  const listState = { language, page: currentPage, viewMode }
+
+  const updateSearch = (updates) => {
+    const next = new URLSearchParams(searchParams)
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === undefined) next.delete(key)
+      else next.set(key, String(value))
+    })
+
+    setSearchParams(next)
+  }
+
+  const changeLanguage = (nextLanguage) => {
+    const pathname = getLocalizedPath(location.pathname, nextLanguage)
+    navigate(`${pathname}${location.search}`, {
+      replace: true,
+      state: location.state,
+    })
+  }
+
+  const changePage = (page) => {
+    updateSearch({ page: page > 1 ? page : null })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const changeViewMode = (mode) => {
+    updateSearch({
+      view: mode === 'list' ? 'list' : null,
+      page: null,
+    })
+  }
+
+  useEffect(() => {
+    document.documentElement.lang = copy.htmlLanguage
+  }, [copy.htmlLanguage])
 
   return (
     <div className="site-shell">
       <header className="masthead">
-        <Link className="brand" to="/" aria-label="VAN News 홈">
+        <Link className="brand" to={getListUrl(listState)} aria-label={copy.homeLabel}>
           <span className="brand-mark" aria-hidden="true">V</span>
           <span>
             <strong>VAN NEWS</strong>
             <small>MEDIA PLATFORM</small>
           </span>
         </Link>
-        <p>NEWSROOM</p>
+        <div className="masthead-actions">
+          <p>{copy.newsroom}</p>
+          <LanguageSwitch
+            language={language}
+            onLanguageChange={changeLanguage}
+            copy={copy}
+          />
+        </div>
       </header>
 
       <Routes>
@@ -257,19 +688,39 @@ export default function App() {
           path="/"
           element={
             <ArticleListPage
+              language={language}
               currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              setCurrentPage={changePage}
               viewMode={viewMode}
-              setViewMode={setViewMode}
+              setViewMode={changeViewMode}
             />
           }
         />
-        <Route path="/articles/:articleId" element={<ArticleRoutePage />} />
+        <Route
+          path="/en"
+          element={
+            <ArticleListPage
+              language={language}
+              currentPage={currentPage}
+              setCurrentPage={changePage}
+              viewMode={viewMode}
+              setViewMode={changeViewMode}
+            />
+          }
+        />
+        <Route
+          path="/articles/:articleId"
+          element={<ArticleRoutePage language={language} listState={listState} />}
+        />
+        <Route
+          path="/en/articles/:articleId"
+          element={<ArticleRoutePage language={language} listState={listState} />}
+        />
       </Routes>
 
       <footer>
         <span>VAN NEWS</span>
-        <p>언론사 미디어 플랫폼 프론트엔드</p>
+        <p>{copy.footerDescription}</p>
       </footer>
     </div>
   )
