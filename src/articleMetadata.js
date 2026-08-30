@@ -28,7 +28,16 @@ function setCanonical(url) {
   canonical.setAttribute('href', url)
 }
 
-function setStructuredArticle(article, url, language) {
+function clearSocialImageMetadata() {
+  removeMeta('property', 'og:image')
+  removeMeta('property', 'og:image:alt')
+  removeMeta('property', 'og:image:width')
+  removeMeta('property', 'og:image:height')
+  removeMeta('name', 'twitter:image')
+  removeMeta('name', 'twitter:image:alt')
+}
+
+function setStructuredArticle(article, url, language, imageUrl) {
   let script = document.head.querySelector('#article-structured-data')
 
   if (!script) {
@@ -40,7 +49,7 @@ function setStructuredArticle(article, url, language) {
 
   script.textContent = JSON.stringify({
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'NewsArticle',
     headline: article.title,
     description: article.summary,
     articleBody: article.body.join('\n\n'),
@@ -51,9 +60,24 @@ function setStructuredArticle(article, url, language) {
     articleSection: article.category,
     author: {
       '@type': 'Organization',
+      name: article.author.name,
+    },
+    publisher: {
+      '@type': 'Organization',
       name: 'VAN NEWS',
     },
-    citation: article.source.url,
+    ...(imageUrl
+      ? {
+          image: {
+            '@type': 'ImageObject',
+            url: imageUrl,
+            width: article.image.width,
+            height: article.image.height,
+            caption: article.image.caption,
+            creditText: article.image.credit,
+          },
+        }
+      : {}),
     isAccessibleForFree: true,
   })
 }
@@ -63,6 +87,9 @@ export function applyArticleMetadata(article, requestedLanguage = 'ko') {
   const copy = getMessages(language)
   const url = new URL(window.location.pathname, window.location.origin).href
   const title = `${article.title} | VAN NEWS`
+  const imageUrl = article.image
+    ? new URL(article.image.src, window.location.origin).href
+    : null
 
   document.title = title
   setCanonical(url)
@@ -75,10 +102,20 @@ export function applyArticleMetadata(article, requestedLanguage = 'ko') {
   setMeta('property', 'og:url', url)
   setMeta('property', 'article:published_time', article.publishedAt)
   setMeta('property', 'article:section', article.category)
-  setMeta('name', 'twitter:card', 'summary')
+  setMeta('name', 'twitter:card', imageUrl ? 'summary_large_image' : 'summary')
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', article.summary)
-  setStructuredArticle(article, url, language)
+  if (imageUrl) {
+    setMeta('property', 'og:image', imageUrl)
+    setMeta('property', 'og:image:alt', article.image.alt)
+    setMeta('property', 'og:image:width', article.image.width)
+    setMeta('property', 'og:image:height', article.image.height)
+    setMeta('name', 'twitter:image', imageUrl)
+    setMeta('name', 'twitter:image:alt', article.image.alt)
+  } else {
+    clearSocialImageMetadata()
+  }
+  setStructuredArticle(article, url, language, imageUrl)
 }
 
 export function applyNotFoundMetadata(requestedLanguage = 'ko') {
@@ -98,6 +135,8 @@ export function applyNotFoundMetadata(requestedLanguage = 'ko') {
   setMeta('property', 'og:url', url)
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
+  setMeta('name', 'twitter:card', 'summary')
+  clearSocialImageMetadata()
   removeMeta('property', 'article:published_time')
   removeMeta('property', 'article:section')
   document.head.querySelector('#article-structured-data')?.remove()
@@ -120,6 +159,7 @@ export function resetArticleMetadata(requestedLanguage = 'ko') {
   setMeta('name', 'twitter:card', 'summary')
   setMeta('name', 'twitter:title', copy.defaultTitle)
   setMeta('name', 'twitter:description', copy.defaultDescription)
+  clearSocialImageMetadata()
   removeMeta('property', 'article:published_time')
   removeMeta('property', 'article:section')
   document.head.querySelector('#article-structured-data')?.remove()
