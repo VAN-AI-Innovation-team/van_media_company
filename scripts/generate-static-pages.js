@@ -41,6 +41,7 @@ function getStaticHead({ language, article }) {
         '@type': 'Article',
         headline: article.title,
         description: article.summary,
+        articleBody: article.body.join('\n\n'),
         datePublished: article.publishedAt,
         inLanguage: language === 'en' ? 'en-US' : 'ko-KR',
         mainEntityOfPage: url,

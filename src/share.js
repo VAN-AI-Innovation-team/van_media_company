@@ -5,6 +5,7 @@ export function getShareTargets({ title, url }) {
   return {
     x: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    instagram: 'https://www.instagram.com/',
   }
 }
 

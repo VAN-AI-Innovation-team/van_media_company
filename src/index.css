@@ -1,18 +1,18 @@
 :root {
-  --color-primary: #1463ff;
-  --color-primary-dark: #0846c9;
-  --color-navy: #0b1f33;
-  --color-navy-soft: #173a5c;
-  --color-teal: #0b9a93;
-  --color-sky: #78c8ee;
-  --color-ink: #10283e;
-  --color-muted: #64788b;
-  --color-bg: #f5f8fa;
+  --color-primary: #315f80;
+  --color-primary-dark: #0b2037;
+  --color-navy: #0b2037;
+  --color-navy-soft: #12304e;
+  --color-teal: #5e8994;
+  --color-sky: #8bb6d9;
+  --color-ink: #142536;
+  --color-muted: #66798a;
+  --color-bg: #f6f7f8;
   --color-surface: #ffffff;
-  --color-border: #dce5eb;
-  --color-soft-blue: #eaf2ff;
-  --shadow-soft: 0 24px 70px rgb(20 55 84 / 11%);
-  --page-width: 1240px;
+  --color-border: #d8e1e8;
+  --color-soft-blue: #edf3f7;
+  --shadow-soft: 0 18px 45px rgb(16 42 67 / 8%);
+  --page-width: 1180px;
   font-family:
     Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui,
     sans-serif;

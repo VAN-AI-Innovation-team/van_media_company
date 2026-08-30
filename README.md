@@ -37,15 +37,16 @@ PDF의 `2-5 언론사 미디어 플랫폼` 요구사항과 연결해, 프론트�
 - `useState`와 클릭 이벤트를 사용한 카드형/리스트형 전환
 - `aria-pressed`, 키보드 포커스, 반응형 레이아웃
 - React Router 기반 `/`, `/articles/:articleId/`, `/en/`, `/en/articles/:articleId/` 경로
-- 기사 카테고리·제목·출처·발행일·자체 요약을 구분한 상세 읽기 화면
-- 기사별 핵심 포인트와 언론사 원문 이동 안내
+- 기사 카테고리·제목·출처·발행일·자체 요약 본문을 구분한 상세 읽기 화면
+- 기사별 3개 문단의 자체 요약 본문, 핵심 포인트와 언론사 원문 이동 안내
 - 같은 주제를 우선하는 관련 기사 3건과 목록 복귀 동선
 - 존재하지 않는 기사 ID 안내와 최근 기사 추천
-- 한 페이지당 3건, 이전/다음/페이지 번호를 제공하는 Pagination
+- 카드형에서는 기사 6건 전체 노출, 리스트형에서는 한 페이지당 3건과 이전/다음/페이지 번호 제공
 - 향후 API의 `page`·`limit` 응답으로 교체할 수 있는 로컬 페이지 데이터 함수
 - Web Share API를 우선 사용하는 모바일·데스크톱 공유 버튼
 - 미지원 환경의 Clipboard API 링크 복사와 추가 대체 동작
-- X·Facebook 외부 공유 링크와 `aria-live` 결과 안내
+- X·Facebook 아이콘 공유, Instagram 링크 복사 안내와 `aria-live` 결과 안내
+- VAN Conference와 같은 Deep Navy·White·Off-white 계열의 반응형 디자인
 - 기사별 title·description·Open Graph·Twitter 메타데이터와 Article JSON-LD 갱신
 - 한국어/영어 전환과 기사 6건의 영문 제목·요약·핵심 포인트
 - 한국어/영어를 고정 URL로 구분하고 목록의 페이지·카드/리스트 상태를 쿼리로 유지
