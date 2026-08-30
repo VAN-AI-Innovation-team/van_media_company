@@ -13,10 +13,23 @@ export const articles = [
       '엔비디아의 호실적이 국내 반도체주와 코스피 상승을 이끌었다.',
       '한국은행의 기준금리 인상 발표 뒤 지수의 상승 폭은 축소됐다.',
     ],
+    translations: {
+      en: {
+        category: 'Finance & Markets',
+        title: 'KOSPI gains more than 1% on Nvidia earnings before rate hike trims the rise',
+        summary:
+          'Strong Nvidia results lifted Korean chip shares and the KOSPI, but gains narrowed after the Bank of Korea announced a rate increase.',
+        highlights: [
+          'Nvidia\'s strong earnings supported gains in Korean chip stocks and the broader market.',
+          'The index gave back part of its rise after the Bank of Korea announced a rate increase.',
+        ],
+      },
+    },
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
       name: '연합뉴스',
+      nameEn: 'Yonhap News Agency',
       url: 'https://www.yna.co.kr/view/AKR20260827142951008',
     },
     accent: '#1463ff',
@@ -32,10 +45,23 @@ export const articles = [
       '한국은행이 올해 성장률 전망을 2.6%에서 3.3%로 상향했다.',
       '반도체 수출과 정보기술 설비투자, 소비 회복이 전망 조정의 배경으로 제시됐다.',
     ],
+    translations: {
+      en: {
+        category: 'Economy & Macroeconomics',
+        title: 'Bank of Korea raises 2026 growth forecast from 2.6% to 3.3%',
+        summary:
+          'The Bank of Korea raised its annual growth forecast, citing strong semiconductor exports, IT investment and a recovery in consumption.',
+        highlights: [
+          'The central bank lifted its annual growth forecast from 2.6% to 3.3%.',
+          'Semiconductor exports, IT investment and improving consumption were cited as key drivers.',
+        ],
+      },
+    },
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
       name: '한겨레',
+      nameEn: 'The Hankyoreh',
       url: 'https://www.hani.co.kr/arti/economy/economy_general/1274867.html',
     },
     accent: '#0b9a93',
@@ -51,10 +77,23 @@ export const articles = [
       '혈액 속 세포유리DNA를 AI로 분석하는 대장암 선별 방법이 시험됐다.',
       '내시경이나 대변 채취의 부담을 보완할 가능성과 진단 정확도가 핵심이다.',
     ],
+    translations: {
+      en: {
+        category: 'Health & Science',
+        title: 'Blood test shows high accuracy for colorectal cancer screening',
+        summary:
+          'Korean researchers tested an AI method that analyzes cell-free DNA in blood and reported high accuracy in colorectal cancer screening.',
+        highlights: [
+          'The screening method uses AI to analyze cell-free DNA found in blood.',
+          'It could complement procedures that require colonoscopy or stool collection.',
+        ],
+      },
+    },
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
       name: '경향신문',
+      nameEn: 'Kyunghyang Shinmun',
       url: 'https://www.khan.co.kr/article/202608271046001',
     },
     accent: '#173a5c',
@@ -70,10 +109,23 @@ export const articles = [
       '지역 의료기관과 보건소의 역할을 새롭게 구성하는 방안이 논의됐다.',
       '지역별 건강 필요도에 맞춘 재정 배분이 주요 제안으로 제시됐다.',
     ],
+    translations: {
+      en: {
+        category: 'Society & Health Policy',
+        title: 'Medical Innovation Committee proposes regional and primary care reform',
+        summary:
+          'The committee proposed redefining the roles of local clinics and public health centers while allocating funding according to regional health needs.',
+        highlights: [
+          'The proposal reorganizes the roles of local medical providers and public health centers.',
+          'Funding based on each region\'s health needs is a central recommendation.',
+        ],
+      },
+    },
     publishedAt: '2026-08-27',
     publishedLabel: '2026.08.27',
     source: {
       name: '한겨레',
+      nameEn: 'The Hankyoreh',
       url: 'https://www.hani.co.kr/arti/society/health/1274899.html',
     },
     accent: '#328cb7',
@@ -89,10 +141,23 @@ export const articles = [
       '전기차와 로보택시의 경쟁 기준이 소프트웨어와 AI 역량으로 이동하고 있다.',
       '주행거리뿐 아니라 차량의 자율 판단 능력이 미래 모빌리티의 차별점으로 다뤄졌다.',
     ],
+    translations: {
+      en: {
+        category: 'AI & Industry',
+        title: 'EVs and robotaxis powered by AI point to the future of mobility',
+        summary:
+          'A future-mobility exhibition shows how competition in electric vehicles is shifting from driving range to software and autonomous decision-making.',
+        highlights: [
+          'Software and AI capability are becoming key competitive factors for EVs and robotaxis.',
+          'Autonomous decision-making is emerging alongside driving range as a major differentiator.',
+        ],
+      },
+    },
     publishedAt: '2026-08-26',
     publishedLabel: '2026.08.26',
     source: {
       name: '서울신문',
+      nameEn: 'Seoul Shinmun',
       url: 'https://www.seoul.co.kr/news/economy/car/2026/08/26/20260826032004',
     },
     accent: '#55748e',
@@ -108,10 +173,23 @@ export const articles = [
       'AI 윤리원칙은 인간 존엄과 공공선, 지속가능성을 핵심 가치로 제시한다.',
       '개발자와 서비스 제공자뿐 아니라 이용자도 원칙의 적용 대상으로 다뤄진다.',
     ],
+    translations: {
+      en: {
+        category: 'AI & Policy',
+        title: 'Korea establishes human-centered principles for AI ethics',
+        summary:
+          'The government introduced shared AI principles for developers, service providers and users, centered on human dignity, the public good and sustainability.',
+        highlights: [
+          'The principles identify human dignity, the public good and sustainability as core values.',
+          'They apply not only to developers and providers but also to people who use AI services.',
+        ],
+      },
+    },
     publishedAt: '2026-08-24',
     publishedLabel: '2026.08.24',
     source: {
       name: 'SBS 뉴스',
+      nameEn: 'SBS News',
       url: 'https://news.sbs.co.kr/news/endPage.do?news_id=N1008719288',
     },
     accent: '#0846c9',
@@ -119,14 +197,35 @@ export const articles = [
   },
 ]
 
-export function getArticlePage({ page = 1, limit = ARTICLES_PER_PAGE } = {}) {
+export function localizeArticle(article, language = 'ko') {
+  if (!article || language !== 'en') return article
+
+  const translation = article.translations?.en
+
+  return {
+    ...article,
+    ...translation,
+    source: {
+      ...article.source,
+      name: article.source.nameEn ?? article.source.name,
+    },
+  }
+}
+
+export function getArticlePage({
+  page = 1,
+  limit = ARTICLES_PER_PAGE,
+  language = 'ko',
+} = {}) {
   const totalItems = articles.length
   const totalPages = Math.max(1, Math.ceil(totalItems / limit))
   const safePage = Math.min(Math.max(page, 1), totalPages)
   const startIndex = (safePage - 1) * limit
 
   return {
-    items: articles.slice(startIndex, startIndex + limit),
+    items: articles
+      .slice(startIndex, startIndex + limit)
+      .map((article) => localizeArticle(article, language)),
     page: safePage,
     limit,
     totalItems,
@@ -134,12 +233,15 @@ export function getArticlePage({ page = 1, limit = ARTICLES_PER_PAGE } = {}) {
   }
 }
 
-export function getArticleById(articleId) {
-  return articles.find((article) => String(article.id) === String(articleId))
+export function getArticleById(articleId, language = 'ko') {
+  const article = articles.find((item) => String(item.id) === String(articleId))
+  return localizeArticle(article, language)
 }
 
-export function getRelatedArticles(articleId, limit = 3) {
-  const currentArticle = getArticleById(articleId)
+export function getRelatedArticles(articleId, limit = 3, language = 'ko') {
+  const currentArticle = articles.find(
+    (article) => String(article.id) === String(articleId),
+  )
   if (!currentArticle) return []
 
   const currentTopics = new Set(currentArticle.category.split('·'))
@@ -154,5 +256,5 @@ export function getRelatedArticles(articleId, limit = 3) {
     }))
     .sort((left, right) => right.relevance - left.relevance || right.article.id - left.article.id)
     .slice(0, limit)
-    .map(({ article }) => article)
+    .map(({ article }) => localizeArticle(article, language))
 }
