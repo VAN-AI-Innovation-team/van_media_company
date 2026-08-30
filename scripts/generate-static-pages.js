@@ -35,10 +35,13 @@ function getStaticHead({ language, article }) {
   const title = article ? `${article.title} | VAN NEWS` : copy.defaultTitle
   const description = article?.summary ?? copy.defaultDescription
   const type = article ? 'article' : 'website'
+  const imageUrl = article?.image
+    ? new URL(article.image.src, `${siteOrigin}/`).href
+    : null
   const structuredData = article
     ? {
         '@context': 'https://schema.org',
-        '@type': 'Article',
+        '@type': 'NewsArticle',
         headline: article.title,
         description: article.summary,
         articleBody: article.body.join('\n\n'),
@@ -49,9 +52,24 @@ function getStaticHead({ language, article }) {
         articleSection: article.category,
         author: {
           '@type': 'Organization',
+          name: article.author.name,
+        },
+        publisher: {
+          '@type': 'Organization',
           name: 'VAN NEWS',
         },
-        citation: article.source.url,
+        ...(imageUrl
+          ? {
+              image: {
+                '@type': 'ImageObject',
+                url: imageUrl,
+                width: article.image.width,
+                height: article.image.height,
+                caption: article.image.caption,
+                creditText: article.image.credit,
+              },
+            }
+          : {}),
         isAccessibleForFree: true,
       }
     : {
@@ -68,6 +86,15 @@ function getStaticHead({ language, article }) {
     <meta property="article:published_time" content="${escapeHtml(article.publishedAt)}" />
     <meta property="article:section" content="${escapeHtml(article.category)}" />`
     : ''
+  const imageMeta = imageUrl
+    ? `
+    <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:image:alt" content="${escapeHtml(article.image.alt)}" />
+    <meta property="og:image:width" content="${escapeHtml(article.image.width)}" />
+    <meta property="og:image:height" content="${escapeHtml(article.image.height)}" />
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(article.image.alt)}" />`
+    : ''
 
   return `<!-- STATIC_META_START -->
     <meta name="description" content="${escapeHtml(description)}" />
@@ -80,8 +107,8 @@ function getStaticHead({ language, article }) {
     <meta property="og:locale" content="${copy.locale}" />
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
-    <meta property="og:url" content="${escapeHtml(url)}" />${articleMeta}
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:url" content="${escapeHtml(url)}" />${articleMeta}${imageMeta}
+    <meta name="twitter:card" content="${imageUrl ? 'summary_large_image' : 'summary'}" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <script id="${article ? 'article-structured-data' : 'site-structured-data'}" type="application/ld+json">${JSON.stringify(structuredData).replaceAll('<', '\\u003c')}</script>

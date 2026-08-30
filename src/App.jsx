@@ -160,7 +160,32 @@ function LanguageSwitch({ language, onLanguageChange, copy }) {
   )
 }
 
-function ArticleVisual({ article }) {
+function ArticleVisual({ article, detail = false }) {
+  if (article.image) {
+    return (
+      <figure className={`article-visual article-visual--photo${detail ? ' article-visual--detail' : ''}`}>
+        <img
+          src={article.image.src}
+          alt={article.image.alt}
+          width={article.image.width}
+          height={article.image.height}
+          style={{
+            '--image-position': article.image.objectPosition ?? '50% 50%',
+            '--image-fit': detail ? 'contain' : article.image.cardFit ?? 'cover',
+          }}
+          loading={detail ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+        {detail && (article.image.caption || article.image.credit) && (
+          <figcaption className="article-visual__caption">
+            {article.image.caption && <span>{article.image.caption}</span>}
+            {article.image.credit && <small>{article.image.credit}</small>}
+          </figcaption>
+        )}
+      </figure>
+    )
+  }
+
   return (
     <div
       className={`article-visual article-visual--${article.visual}`}
@@ -170,6 +195,43 @@ function ArticleVisual({ article }) {
       <span className="visual-orbit" />
       <span className="visual-panel" />
       <strong>{article.category}</strong>
+    </div>
+  )
+}
+
+function ArticleStory({ article }) {
+  const inlineImages = article.inlineImages ?? []
+
+  return (
+    <div className="article-story">
+      {article.body.flatMap((paragraph, index) => {
+        const imagesAfterParagraph = inlineImages.filter(
+          (image) => image.afterParagraph === index + 1,
+        )
+
+        return [
+          <p key={`paragraph-${index}`}>{paragraph}</p>,
+          ...imagesAfterParagraph.map((image) => (
+            <figure className="article-story__media" key={image.id ?? image.src}>
+              <img
+                src={image.src}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                style={{ '--image-position': image.objectPosition ?? '50% 50%' }}
+                loading="lazy"
+                decoding="async"
+              />
+              {(image.caption || image.credit) && (
+                <figcaption>
+                  {image.caption && <span>{image.caption}</span>}
+                  {image.credit && <small>{image.credit}</small>}
+                </figcaption>
+              )}
+            </figure>
+          )),
+        ]
+      })}
     </div>
   )
 }
@@ -192,11 +254,11 @@ function ArticleItem({ article, listState, copy }) {
           <h2>{article.title}</h2>
           <p className="article-summary">{article.summary}</p>
           <div className="article-meta">
-            <span>{article.source.name}</span>
+            <span>{article.author.name}</span>
             <span className="meta-divider" aria-hidden="true" />
             <time dateTime={article.publishedAt}>{article.publishedLabel}</time>
             <span className="meta-divider" aria-hidden="true" />
-            <span>{copy.realSource}</span>
+            <span>{copy.readFullArticle}</span>
           </div>
         </div>
       </Link>
@@ -212,7 +274,7 @@ function RelatedArticleCard({ article, listState, listUrl }) {
         <div>
           <span>{article.category}</span>
           <h3>{article.title}</h3>
-          <p>{article.source.name} · {article.publishedLabel}</p>
+          <p>{article.author.name} · {article.publishedLabel}</p>
         </div>
       </Link>
     </article>
@@ -279,6 +341,7 @@ function ShareTools({ article, copy }) {
           target="_blank"
           rel="noreferrer"
           aria-label={copy.xShareLabel}
+          title={copy.xShareLabel}
         >
           <XIcon />
         </a>
@@ -288,6 +351,7 @@ function ShareTools({ article, copy }) {
           target="_blank"
           rel="noreferrer"
           aria-label={copy.facebookShareLabel}
+          title={copy.facebookShareLabel}
         >
           <FacebookIcon />
         </a>
@@ -297,11 +361,13 @@ function ShareTools({ article, copy }) {
           target="_blank"
           rel="noreferrer"
           aria-label={copy.instagramShareLabel}
+          title={copy.instagramShareLabel}
           onClick={() => { void copyCurrentUrl(copy.instagramCopied) }}
         >
           <InstagramIcon />
         </a>
       </div>
+      <p className="share-tools__hint">{copy.shareHint}</p>
       <p className="share-tools__status" role="status" aria-live="polite">{status}</p>
     </section>
   )
@@ -491,49 +557,34 @@ function ArticleRoutePage({ language, listState }) {
           <p className="eyebrow">{article.category} · {copy.articleLabel} {article.id}</p>
           <h1 id="article-title">{article.title}</h1>
           <div className="article-detail__meta">
-            <span><small>{copy.source}</small>{article.source.name}</span>
+            <span><small>{copy.author}</small>{article.author.name}</span>
             <time dateTime={article.publishedAt}><small>{copy.published}</small>{article.publishedLabel}</time>
           </div>
-          <p className="article-detail__lead">{article.summary}</p>
         </header>
 
-        <ArticleVisual article={article} />
+        <ArticleVisual article={article} detail />
 
         <div className="article-detail__body">
           <aside aria-label={copy.articleInfo}>
             <p>{copy.articleInfo.toUpperCase()}</p>
             <dl>
               <div><dt>{copy.category}</dt><dd>{article.category}</dd></div>
-              <div><dt>{copy.source}</dt><dd>{article.source.name}</dd></div>
+              <div><dt>{copy.author}</dt><dd>{article.author.name}</dd></div>
               <div><dt>{copy.publishedBasis}</dt><dd>{article.publishedLabel}</dd></div>
             </dl>
           </aside>
-          <section aria-labelledby="article-summary-title">
-            <p className="eyebrow">{copy.editorSummary}</p>
-            <h2 id="article-summary-title">{copy.summaryTitle}</h2>
-            <div className="article-story">
-              {article.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </div>
+          <section aria-labelledby="article-body-title">
+            <p className="eyebrow">{copy.articleBodyEyebrow}</p>
+            <h2 id="article-body-title">{copy.articleBodyTitle}</h2>
+            <ArticleStory article={article} />
             <div className="article-highlights" aria-labelledby="article-highlights-title">
               <h3 id="article-highlights-title">{copy.highlights}</h3>
               <ul>
                 {article.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
               </ul>
             </div>
-            <div className="source-notice">
-              <strong>{copy.sourceNoticeTitle}</strong>
-              <p>{copy.sourceNoticeBody}</p>
-            </div>
             <ShareTools key={`${article.id}-${language}`} article={article} copy={copy} />
             <div className="route-actions">
-              <a
-                className="source-link"
-                href={article.source.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {copy.originalArticle(article.source.name)} <span aria-hidden="true">↗</span>
-              </a>
               <Link className="back-link" to={listUrl}>
                 <span aria-hidden="true">←</span> {copy.backToArticles}
               </Link>
