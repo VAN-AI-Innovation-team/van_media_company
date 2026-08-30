@@ -44,7 +44,7 @@ PDF의 `2-5 언론사 미디어 플랫폼` 요구사항과 연결해, 프론트�
 - 존재하지 않는 기사 ID 안내와 최근 기사 추천
 - 카드형에서는 기사 6건 전체 노출, 리스트형에서는 한 페이지당 3건과 이전/다음/페이지 번호 제공
 - 향후 API의 `page`·`limit` 응답으로 교체할 수 있는 로컬 페이지 데이터 함수
-- Web Share API를 우선 사용하는 모바일·데스크톱 공유 버튼
+- Windows·모바일의 기기 기본 공유창을 여는 Web Share API 버튼과 미지원 환경의 링크 복사 대체 동작
 - 미지원 환경의 Clipboard API 링크 복사와 추가 대체 동작
 - X·Facebook 아이콘 공유, Instagram 링크 복사 안내와 `aria-live` 결과 안내
 - VAN Conference와 같은 Deep Navy·White·Off-white 계열의 반응형 디자인

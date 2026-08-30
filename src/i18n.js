@@ -49,8 +49,14 @@ const messages = {
     highlights: '핵심 포인트',
     shareEyebrow: '기사 공유',
     shareTitle: '이 기사를 공유하세요',
+    deviceShare: '기기 공유',
+    deviceShareTitle: '기기 기본 공유창',
+    deviceShareDescription:
+      'Windows·모바일의 기본 공유창에서 설치된 앱이나 연락처를 선택해 보낼 수 있습니다.',
+    deviceShareAvailable: '이 기기에서 사용 가능',
+    deviceShareFallback: '미지원 환경에서는 링크 복사',
     shareHint:
-      'X·Facebook은 공유 화면이 열립니다. Instagram은 링크를 복사한 뒤 앱에서 붙여넣어 주세요.',
+      '기기 공유 버튼은 운영체제의 공유창을 엽니다. X·Facebook은 각 서비스의 공유 화면이 열리고, Instagram은 링크를 복사합니다.',
     share: '공유하기',
     copyLink: '링크 복사',
     copied: '기사 링크를 복사했습니다.',
@@ -115,8 +121,14 @@ const messages = {
     highlights: 'Key points',
     shareEyebrow: 'SHARE ARTICLE',
     shareTitle: 'Share this story',
+    deviceShare: 'Device share',
+    deviceShareTitle: 'Share with your device',
+    deviceShareDescription:
+      'Open the Windows or mobile share sheet and choose an installed app or contact.',
+    deviceShareAvailable: 'Available on this device',
+    deviceShareFallback: 'Copies the link when unavailable',
     shareHint:
-      'X and Facebook open a share screen. Instagram copies the link so you can paste it in the app.',
+      'Device share opens your system share sheet. X and Facebook open their share screens, while Instagram copies the link.',
     share: 'Share',
     copyLink: 'Copy link',
     copied: 'Article link copied.',
