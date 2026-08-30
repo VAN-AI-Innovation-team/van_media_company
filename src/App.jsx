@@ -20,7 +20,12 @@ import {
   resetArticleMetadata,
 } from './articleMetadata.js'
 import { getMessages, normalizeLanguage } from './i18n.js'
-import { copyShareUrl, getShareTargets } from './share.js'
+import {
+  copyShareUrl,
+  getShareTargets,
+  shareWithDevice,
+  supportsNativeShare,
+} from './share.js'
 import './App.css'
 
 function getPageNumber(value) {
@@ -283,9 +288,17 @@ function RelatedArticleCard({ article, listState, listUrl }) {
 
 function ShareTools({ article, copy }) {
   const [status, setStatus] = useState('')
-  const shareUrl = new URL(window.location.pathname, window.location.origin).href
+  const shareUrl = new URL(
+    `${window.location.pathname}${window.location.search}`,
+    window.location.origin,
+  ).href
+  const shareData = {
+    title: article.title,
+    text: article.summary,
+    url: shareUrl,
+  }
   const shareTargets = getShareTargets({ title: article.title, url: shareUrl })
-  const supportsNativeShare = typeof navigator.share === 'function'
+  const nativeShareAvailable = supportsNativeShare(navigator, shareData)
 
   const copyCurrentUrl = async (message = copy.copied) => {
     try {
@@ -297,26 +310,24 @@ function ShareTools({ article, copy }) {
   }
 
   const shareArticle = async () => {
-    if (!supportsNativeShare) {
+    const result = await shareWithDevice(shareData, navigator)
+
+    if (result.status === 'unsupported') {
       await copyCurrentUrl(copy.shareUnsupported)
       return
     }
 
-    try {
-      await navigator.share({
-        title: article.title,
-        text: article.summary,
-        url: shareUrl,
-      })
+    if (result.status === 'shared') {
       setStatus(copy.shared)
-    } catch (error) {
-      if (error?.name === 'AbortError') {
-        setStatus(copy.shareCanceled)
-        return
-      }
-
-      await copyCurrentUrl(copy.shareFallback)
+      return
     }
+
+    if (result.status === 'canceled') {
+      setStatus(copy.shareCanceled)
+      return
+    }
+
+    await copyCurrentUrl(copy.shareFallback)
   }
 
   return (
@@ -325,12 +336,24 @@ function ShareTools({ article, copy }) {
         <p className="eyebrow">{copy.shareEyebrow}</p>
         <h3 id="share-tools-title">{copy.shareTitle}</h3>
       </div>
-      <div className="share-tools__actions">
+      <div className="share-tools__native">
+        <span className="share-tools__native-icon" aria-hidden="true">
+          <ShareIcon />
+        </span>
+        <div className="share-tools__native-copy">
+          <strong>{copy.deviceShareTitle}</strong>
+          <p>{copy.deviceShareDescription}</p>
+          <span className="share-tools__support">
+            {nativeShareAvailable ? copy.deviceShareAvailable : copy.deviceShareFallback}
+          </span>
+        </div>
         <button type="button" className="share-button share-button--primary" onClick={shareArticle}>
           <ShareIcon />
-          {supportsNativeShare ? copy.share : copy.copyLink}
+          {nativeShareAvailable ? copy.deviceShare : copy.copyLink}
         </button>
-        {supportsNativeShare && (
+      </div>
+      <div className="share-tools__actions">
+        {nativeShareAvailable && (
           <button type="button" className="share-button" onClick={() => copyCurrentUrl()}>
             <CopyIcon /> {copy.copyLink}
           </button>
