@@ -6,6 +6,22 @@ async function readBuiltPage(path) {
   return readFile(new URL(`../dist/${path}`, import.meta.url), 'utf8')
 }
 
+test('Google-only noindex is present without blocking other search engines', async () => {
+  const paths = ['index.html', 'en/index.html']
+
+  for (const languagePrefix of ['', 'en/']) {
+    for (let articleId = 1; articleId <= 6; articleId += 1) {
+      paths.push(`${languagePrefix}articles/${articleId}/index.html`)
+    }
+  }
+
+  for (const path of paths) {
+    const html = await readBuiltPage(path)
+    assert.match(html, /<meta name="googlebot" content="noindex" \/>/)
+    assert.doesNotMatch(html, /<meta name="robots" content="noindex/)
+  }
+})
+
 test('Korean article page contains article-specific static sharing metadata', async () => {
   const html = await readBuiltPage('articles/1/index.html')
 
