@@ -12,6 +12,7 @@ test('Korean article page contains article-specific static sharing metadata', as
   assert.match(html, /<html lang="ko">/)
   assert.match(html, /property="og:type" content="article"/)
   assert.match(html, /코스피, 엔비디아 호실적/)
+  assert.match(html, /"articleBody":"코스피는 엔비디아의 분기 실적 호조/)
   assert.match(html, /https:\/\/van-media-company\.vercel\.app\/articles\/1\//)
 })
 

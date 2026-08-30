@@ -9,6 +9,7 @@ import {
   useSearchParams,
 } from 'react-router'
 import {
+  getAllArticles,
   getArticleById,
   getArticlePage,
   getRelatedArticles,
@@ -72,6 +73,52 @@ function ListIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 20 20">
       <path d="M3 4.5h14M3 10h14M3 15.5h14" />
+    </svg>
+  )
+}
+
+function ShareIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" />
+    </svg>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <rect x="8" y="8" width="11" height="11" rx="2" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </svg>
+  )
+}
+
+function XIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M5 4l14 16M19 4 5 20" />
+    </svg>
+  )
+}
+
+function FacebookIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M14 21v-8h3l.5-4H14V7.2c0-1.2.6-2.2 2.4-2.2H18V1.5c-.7-.1-1.8-.2-3-.2-3 0-5 1.8-5 5.2V9H7v4h3v8" />
+    </svg>
+  )
+}
+
+function InstagramIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle className="instagram-dot" cx="17.4" cy="6.7" r="1" />
     </svg>
   )
 }
@@ -218,22 +265,41 @@ function ShareTools({ article, copy }) {
       </div>
       <div className="share-tools__actions">
         <button type="button" className="share-button share-button--primary" onClick={shareArticle}>
-          <span aria-hidden="true">↗</span>
+          <ShareIcon />
           {supportsNativeShare ? copy.share : copy.copyLink}
         </button>
         {supportsNativeShare && (
           <button type="button" className="share-button" onClick={() => copyCurrentUrl()}>
-            <span aria-hidden="true">⧉</span> {copy.copyLink}
+            <CopyIcon /> {copy.copyLink}
           </button>
         )}
-        <a href={shareTargets.x} target="_blank" rel="noreferrer" aria-label={copy.xShareLabel}>X</a>
         <a
+          className="social-share social-share--x"
+          href={shareTargets.x}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.xShareLabel}
+        >
+          <XIcon />
+        </a>
+        <a
+          className="social-share social-share--facebook"
           href={shareTargets.facebook}
           target="_blank"
           rel="noreferrer"
           aria-label={copy.facebookShareLabel}
         >
-          f
+          <FacebookIcon />
+        </a>
+        <a
+          className="social-share social-share--instagram"
+          href={shareTargets.instagram}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.instagramShareLabel}
+          onClick={() => { void copyCurrentUrl(copy.instagramCopied) }}
+        >
+          <InstagramIcon />
         </a>
       </div>
       <p className="share-tools__status" role="status" aria-live="polite">{status}</p>
@@ -285,7 +351,14 @@ function Pagination({ currentPage, totalPages, onPageChange, copy }) {
 function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setViewMode }) {
   const copy = getMessages(language)
   const articlePage = getArticlePage({ page: currentPage, language })
-  const listState = { language, page: articlePage.page, viewMode }
+  const displayedArticles = viewMode === 'card'
+    ? getAllArticles(language)
+    : articlePage.items
+  const listState = {
+    language,
+    page: viewMode === 'card' ? 1 : articlePage.page,
+    viewMode,
+  }
 
   useEffect(() => {
     resetArticleMetadata(language)
@@ -306,7 +379,11 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
         <div className="article-toolbar">
           <div>
             <h2 id="articles-title">{copy.allArticles}</h2>
-            <p>{copy.articleCount(articlePage)}</p>
+            <p>
+              {viewMode === 'card'
+                ? copy.articleCountAll(articlePage.totalItems)
+                : copy.articleCount(articlePage)}
+            </p>
           </div>
 
           <div className="view-toggle" aria-label={copy.viewModeLabel}>
@@ -328,17 +405,19 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
         </div>
 
         <div className={`article-collection article-collection--${viewMode}`}>
-          {articlePage.items.map((article) => (
+          {displayedArticles.map((article) => (
             <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
           ))}
         </div>
 
-        <Pagination
-          currentPage={articlePage.page}
-          totalPages={articlePage.totalPages}
-          onPageChange={setCurrentPage}
-          copy={copy}
-        />
+        {viewMode === 'list' && (
+          <Pagination
+            currentPage={articlePage.page}
+            totalPages={articlePage.totalPages}
+            onPageChange={setCurrentPage}
+            copy={copy}
+          />
+        )}
       </section>
     </main>
   )
@@ -432,7 +511,9 @@ function ArticleRoutePage({ language, listState }) {
           <section aria-labelledby="article-summary-title">
             <p className="eyebrow">{copy.editorSummary}</p>
             <h2 id="article-summary-title">{copy.summaryTitle}</h2>
-            <p>{article.summary}</p>
+            <div className="article-story">
+              {article.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            </div>
             <div className="article-highlights" aria-labelledby="article-highlights-title">
               <h3 id="article-highlights-title">{copy.highlights}</h3>
               <ul>
@@ -521,7 +602,10 @@ export default function App() {
   }
 
   const changeViewMode = (mode) => {
-    updateSearch({ view: mode === 'list' ? 'list' : null })
+    updateSearch({
+      view: mode === 'list' ? 'list' : null,
+      page: null,
+    })
   }
 
   useEffect(() => {

@@ -15,4 +15,5 @@ test('external share targets encode the article title and full URL', () => {
     targets.facebook,
     `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
   )
+  assert.equal(targets.instagram, 'https://www.instagram.com/')
 })

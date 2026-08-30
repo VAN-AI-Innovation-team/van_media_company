@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   ARTICLES_PER_PAGE,
   articles,
+  getAllArticles,
   getArticleById,
   getArticlePage,
   getRelatedArticles,
@@ -17,9 +18,20 @@ test('six verified source records are available over HTTPS', () => {
     assert.ok(article.title)
     assert.ok(article.summary)
     assert.equal(article.highlights.length, 2)
+    assert.equal(article.body.length, 3)
     assert.ok(article.translations.en.title)
     assert.ok(article.translations.en.summary)
+    assert.equal(article.translations.en.body.length, 3)
   }
+})
+
+test('card data returns all six articles in either language', () => {
+  const koreanCards = getAllArticles('ko')
+  const englishCards = getAllArticles('en')
+
+  assert.equal(koreanCards.length, 6)
+  assert.equal(englishCards.length, 6)
+  assert.equal(englishCards[0].title, articles[0].translations.en.title)
 })
 
 test('pagination returns three records and clamps out-of-range pages', () => {
