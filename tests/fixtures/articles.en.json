@@ -1,0 +1,230 @@
+[
+  {
+    "id": 1,
+    "category": "Finance & Markets",
+    "title": "AI optimism and rate hike pull the KOSPI in opposite directions",
+    "summary": "Strong AI expectations lifted Korean chip stocks, while a rate increase reduced the market's gains.",
+    "highlights": [
+      "AI optimism supported Korean semiconductor shares.",
+      "The market gave back part of its gains after the rate increase."
+    ],
+    "body": [
+      "The KOSPI opened higher as buying interest flowed into Korean semiconductor stocks after Nvidia's earnings announcement.",
+      "Major semiconductor stocks, including Samsung Electronics and SK hynix, strengthened during the session.",
+      "Market sentiment shifted after the Bank of Korea announced its interest-rate decision.",
+      "Foreign and institutional investors were net buyers, while individual investors showed net selling.",
+      "The session showed how global AI expectations and domestic monetary policy can affect markets in different directions."
+    ],
+    "publishedAt": "2026-08-27",
+    "publishedLabel": "2026.08.27",
+    "author": {
+      "id": "kim-yoo-hyang",
+      "name": "Yonhap News Agency · Kim Yoo-hyang",
+      "nameEn": "Yonhap News Agency · Kim Yoo-hyang"
+    },
+    "image": {
+      "src": "/images/internal-review/01-kospi.jpg",
+      "alt": "KOSPI and KOSDAQ figures displayed at a dealing room in Seoul",
+      "caption": "Market indicators displayed at a dealing room in Seoul",
+      "credit": "Yonhap News Agency",
+      "width": 1200,
+      "height": 799,
+      "objectPosition": "50% 50%",
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": "https://www.yna.co.kr/view/AKR20260827142951008"
+    },
+    "accent": "#6f96b7",
+    "visual": "data"
+  },
+  {
+    "id": 2,
+    "category": "Economy & Macroeconomics",
+    "title": "Growth forecast raised to 3.3% on semiconductor and consumption recovery",
+    "summary": "The Bank of Korea raised its growth forecast, reflecting stronger semiconductor exports, IT investment and consumption.",
+    "highlights": [
+      "The Bank of Korea raised its economic growth forecast to 3.3%.",
+      "Semiconductor exports, IT investment and recovering consumption supported the revision."
+    ],
+    "body": [
+      "The Bank of Korea raised its economic growth forecast for this year from 2.6% to 3.3%.",
+      "Strong semiconductor exports were cited as a major reason for the upward revision.",
+      "Investment in information technology also contributed to the stronger outlook.",
+      "A recovery in consumption was included in the revised projection.",
+      "Actual growth will depend on exports, household consumption, inflation and interest-rate conditions."
+    ],
+    "publishedAt": "2026-08-27",
+    "publishedLabel": "2026.08.27",
+    "author": {
+      "id": "kim-young-bae",
+      "name": "The Hankyoreh · Kim Young-bae",
+      "nameEn": "The Hankyoreh · Kim Young-bae"
+    },
+    "image": {
+      "src": "/images/internal-review/02-growth.webp",
+      "alt": "클린룸 내부의 반도체 생산 라인",
+      "caption": "반도체 생산 시설",
+      "credit": "내부 검토용",
+      "width": null,
+      "height": null,
+      "objectPosition": null,
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": null
+    },
+    "accent": "#668f91",
+    "visual": "climate"
+  },
+  {
+    "id": 3,
+    "category": "Medicine & Science",
+    "title": "Blood-based colorectal cancer screening study highlights accessibility and validation challenges",
+    "summary": "Researchers tested an AI-based method that analyzes cell-free DNA in blood for colorectal cancer screening.",
+    "highlights": [
+      "AI was used to analyze cell-free DNA in blood for colorectal cancer screening.",
+      "The method may improve accessibility but requires further clinical validation."
+    ],
+    "body": [
+      "Researchers tested a method that analyzes cell-free DNA in blood using artificial intelligence to screen for colorectal cancer.",
+      "AI was used to identify patterns associated with colorectal cancer.",
+      "A blood-based method may provide an alternative for people who find colonoscopy or stool sampling burdensome.",
+      "The findings do not yet mean existing screening methods can be immediately replaced.",
+      "Further studies are needed to confirm accuracy and practical usefulness."
+    ],
+    "publishedAt": "2026-08-27",
+    "publishedLabel": "2026.08.27",
+    "author": {
+      "id": "kim-tae-hoon",
+      "name": "Kyunghyang Shinmun · Kim Tae-hoon",
+      "nameEn": "Kyunghyang Shinmun · Kim Tae-hoon"
+    },
+    "image": {
+      "src": "/images/internal-review/03-blood-screening.png",
+      "alt": "정상 대장에서 용종과 대장암으로 진행되는 단계를 보여주는 자료 이미지",
+      "caption": "대장암 진행 단계를 보여주는 자료 이미지",
+      "credit": "내부 검토용",
+      "width": null,
+      "height": null,
+      "objectPosition": null,
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": null
+    },
+    "accent": "#526f8c",
+    "visual": "culture"
+  },
+  {
+    "id": 4,
+    "category": "Society & Health Policy",
+    "title": "Regional healthcare system discussions focus on funding allocation",
+    "summary": "A healthcare reform committee proposed reorganizing local medical services and allocating resources according to regional health needs.",
+    "highlights": [
+      "The roles of local clinics and public health centers are being reconsidered.",
+      "Funding may be allocated according to regional population and health needs."
+    ],
+    "body": [
+      "The healthcare reform committee discussed reorganizing the roles of local clinics and public health centers.",
+      "These institutions provide healthcare services close to local residents.",
+      "The committee proposed considering regional population and health needs when allocating financial support.",
+      "The responsibilities and cooperation between institutions need to be defined.",
+      "The system will need continued adjustment to reflect conditions in each region."
+    ],
+    "publishedAt": "2026-08-27",
+    "publishedLabel": "2026.08.27",
+    "author": {
+      "id": "heo-yoon-hee",
+      "name": "The Hankyoreh · Heo Yoon-hee",
+      "nameEn": "The Hankyoreh · Heo Yoon-hee"
+    },
+    "image": {
+      "src": "/images/internal-review/04-primary-care.webp",
+      "alt": "의료기관에서 의사가 환자와 상담하는 모습",
+      "caption": "의료기관에서 진행되는 진료 상담",
+      "credit": "내부 검토용",
+      "width": null,
+      "height": null,
+      "objectPosition": null,
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": null
+    },
+    "accent": "#6b98ac",
+    "visual": "education"
+  },
+  {
+    "id": 5,
+    "category": "AI & Industry",
+    "title": "Software joins driving range as AI reshapes future mobility",
+    "summary": "Future mobility competition is shifting toward software and autonomous decision-making capabilities.",
+    "highlights": [
+      "Competition in electric vehicles is expanding beyond driving range to software.",
+      "AI-powered autonomous decision-making is becoming a major competitive factor."
+    ],
+    "body": [
+      "Future mobility exhibitions show electric vehicles and robotaxis becoming software-centered devices.",
+      "Battery performance and driving range remain important competitive factors.",
+      "AI systems capable of recognizing road conditions and making autonomous decisions are gaining importance.",
+      "Vehicle-generated data and software must be reliably connected.",
+      "Future mobility competition is likely to increasingly focus on software and autonomous decision-making."
+    ],
+    "publishedAt": "2026-08-26",
+    "publishedLabel": "2026.08.26",
+    "author": {
+      "id": "heo-baek-yoon",
+      "name": "Seoul Shinmun · Heo Baek-yoon",
+      "nameEn": "Seoul Shinmun · Heo Baek-yoon"
+    },
+    "image": {
+      "src": "/images/internal-review/05-mobility.jpg",
+      "alt": "2026 퓨처 모빌리티 위크 전시장에 전시된 첨단 개인용 항공기",
+      "caption": "미래 모빌리티 전시장",
+      "credit": "내부 검토용",
+      "width": null,
+      "height": null,
+      "objectPosition": null,
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": null
+    },
+    "accent": "#6f8497",
+    "visual": "interview"
+  },
+  {
+    "id": 6,
+    "category": "AI & Policy",
+    "title": "Human-centered AI principles established as implementation becomes next challenge",
+    "summary": "The government introduced AI principles centered on human dignity, public interest and sustainability.",
+    "highlights": [
+      "The government introduced AI principles centered on human dignity and the public interest.",
+      "The next challenge is translating the principles into practical standards."
+    ],
+    "body": [
+      "South Korea's AI ethics principles present common values for the development and use of artificial intelligence.",
+      "The principles emphasize human dignity, public interest and sustainability.",
+      "They apply not only to AI developers and service providers but also to users.",
+      "Responsibility is distributed across planning, development, provision and use.",
+      "The next step is developing practical methods for applying these principles in real-world settings."
+    ],
+    "publishedAt": "2026-08-24",
+    "publishedLabel": "2026.08.24",
+    "author": {
+      "id": "lee-tae-kwon",
+      "name": "SBS News · Lee Tae-kwon",
+      "nameEn": "SBS News · Lee Tae-kwon"
+    },
+    "image": {
+      "src": "/images/internal-review/06-ai-ethics.jpg",
+      "alt": "마이크를 들고 발언하는 배경훈 부총리",
+      "caption": "AI 정책 관련 행사에서 발언하는 모습",
+      "credit": "내부 검토용",
+      "width": null,
+      "height": null,
+      "objectPosition": null,
+      "cardFit": null,
+      "internalReviewOnly": true,
+      "sourceUrl": null
+    },
+    "accent": "#6487ad",
+    "visual": "garden"
+  }
+]

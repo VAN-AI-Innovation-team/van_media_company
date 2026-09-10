@@ -1,14 +1,21 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { articles, localizeArticle } from '../src/articles.js'
+import { loadEnv } from 'vite'
+import { ARTICLE_BACKEND_ORIGIN, createArticleClient } from '../src/articles.js'
 import { getMessages } from '../src/i18n.js'
 
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const distDirectory = join(projectRoot, 'dist')
 const templatePath = join(distDirectory, 'index.html')
-const siteOrigin = (process.env.SITE_URL || 'https://van-media-company.vercel.app')
-  .replace(/\/+$/, '')
+const env = { ...loadEnv('production', projectRoot, ''), ...process.env }
+const siteOrigin = (env.SITE_URL || 'https://van-media-company.vercel.app').replace(/\/+$/, '')
+const apiBase = env.VITE_ARTICLE_API_BASE_URL || '/api'
+const client = createArticleClient({
+  baseUrl: new URL(apiBase, env.ARTICLE_API_ORIGIN || ARTICLE_BACKEND_ORIGIN).href,
+  // Render may need longer to start than an interactive browser request allows.
+  timeoutMs: 180000,
+})
 
 function escapeHtml(value) {
   return String(value)
@@ -90,8 +97,8 @@ function getStaticHead({ language, article }) {
     ? `
     <meta property="og:image" content="${escapeHtml(imageUrl)}" />
     <meta property="og:image:alt" content="${escapeHtml(article.image.alt)}" />
-    <meta property="og:image:width" content="${escapeHtml(article.image.width)}" />
-    <meta property="og:image:height" content="${escapeHtml(article.image.height)}" />
+    ${article.image.width ? `<meta property="og:image:width" content="${escapeHtml(article.image.width)}" />` : ''}
+    ${article.image.height ? `<meta property="og:image:height" content="${escapeHtml(article.image.height)}" />` : ''}
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(article.image.alt)}" />`
     : ''
@@ -139,16 +146,20 @@ async function writePage(template, { language, article }) {
 }
 
 const template = await readFile(templatePath, 'utf8')
+// Fail the build if the API fails; never publish stale local demo metadata.
+const localizedArticles = await Promise.all(['ko', 'en'].map(async (language) => ({
+  language,
+  articles: await client.getAllArticles(language),
+})))
 
 await writePage(template, { language: 'ko' })
 await writePage(template, { language: 'en' })
 
-for (const article of articles) {
-  await writePage(template, { language: 'ko', article })
-  await writePage(template, {
-    language: 'en',
-    article: localizeArticle(article, 'en'),
-  })
+for (const { language, articles } of localizedArticles) {
+  for (const article of articles) await writePage(template, { language, article })
 }
 
-console.log(`Generated ${articles.length * 2 + 2} static metadata pages.`)
+// Retain the exact build input outside dist for offline validation.
+await mkdir(join(projectRoot, '.generated'), { recursive: true })
+await writeFile(join(projectRoot, '.generated/article-snapshot.json'), JSON.stringify({ siteOrigin, localizedArticles }), 'utf8')
+console.log(`Generated ${localizedArticles.reduce((total, item) => total + item.articles.length, 2)} static metadata pages from the article API.`)
