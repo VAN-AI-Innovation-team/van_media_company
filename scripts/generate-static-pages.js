@@ -13,6 +13,8 @@ const siteOrigin = (env.SITE_URL || 'https://van-media-company.vercel.app').repl
 const apiBase = env.VITE_ARTICLE_API_BASE_URL || '/api'
 const client = createArticleClient({
   baseUrl: new URL(apiBase, env.ARTICLE_API_ORIGIN || ARTICLE_BACKEND_ORIGIN).href,
+  // Render may need longer to start than an interactive browser request allows.
+  timeoutMs: 180000,
 })
 
 function escapeHtml(value) {
