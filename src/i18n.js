@@ -19,6 +19,11 @@ const messages = {
     heroDescription:
       '우리 곁에서 시작된 변화와 그 변화를 만드는 사람들의 이야기를 전합니다.',
     allArticles: '전체 기사',
+    loadingArticles: '기사를 불러오는 중입니다. 잠시만 기다려 주세요.',
+    loadFailed: '기사를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+    retry: '다시 시도',
+    noArticles: '아직 등록된 기사가 없습니다.',
+    noRelatedArticles: '함께 읽을 기사가 아직 없습니다.',
     articleCount: ({ totalItems, page, totalPages }) =>
       `총 ${totalItems}개의 기사 · ${page} / ${totalPages} 페이지`,
     articleCountAll: (totalItems) => `총 ${totalItems}개의 기사 · 카드 전체 보기`,
@@ -92,6 +97,11 @@ const messages = {
     heroDescription:
       'We cover the changes beginning around us and the people working to make them happen.',
     allArticles: 'All stories',
+    loadingArticles: 'Loading stories. Please wait a moment.',
+    loadFailed: 'We could not load the stories. Please try again shortly.',
+    retry: 'Try again',
+    noArticles: 'No stories have been published yet.',
+    noRelatedArticles: 'There are no related stories yet.',
     articleCount: ({ totalItems, page, totalPages }) =>
       `${totalItems} stories · Page ${page} of ${totalPages}`,
     articleCountAll: (totalItems) => `${totalItems} stories · All cards`,

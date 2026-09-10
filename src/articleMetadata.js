@@ -108,8 +108,10 @@ export function applyArticleMetadata(article, requestedLanguage = 'ko') {
   if (imageUrl) {
     setMeta('property', 'og:image', imageUrl)
     setMeta('property', 'og:image:alt', article.image.alt)
-    setMeta('property', 'og:image:width', article.image.width)
-    setMeta('property', 'og:image:height', article.image.height)
+    if (article.image.width) setMeta('property', 'og:image:width', article.image.width)
+    else removeMeta('property', 'og:image:width')
+    if (article.image.height) setMeta('property', 'og:image:height', article.image.height)
+    else removeMeta('property', 'og:image:height')
     setMeta('name', 'twitter:image', imageUrl)
     setMeta('name', 'twitter:image:alt', article.image.alt)
   } else {

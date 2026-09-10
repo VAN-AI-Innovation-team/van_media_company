@@ -1504,3 +1504,14 @@ footer p {
     display: none;
   }
 }
+.request-notice {
+  padding: 1.5rem;
+  color: var(--color-muted, #526176);
+  background: #f4f6f8;
+  border-radius: 8px;
+  line-height: 1.7;
+}
+
+.request-notice--error p {
+  margin: 0 0 1rem;
+}

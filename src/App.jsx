@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Link,
   Route,
@@ -20,6 +20,7 @@ import {
   resetArticleMetadata,
 } from './articleMetadata.js'
 import { getMessages, normalizeLanguage } from './i18n.js'
+import { useArticleRequest } from './useArticleRequest.js'
 import {
   copyShareUrl,
   getShareTargets,
@@ -437,15 +438,77 @@ function Pagination({ currentPage, totalPages, onPageChange, copy }) {
   )
 }
 
+function RequestNotice({ request, copy }) {
+  if (request.status === 'loading') {
+    return <p className="request-notice" role="status">{copy.loadingArticles}</p>
+  }
+  if (request.status === 'error') {
+    return (
+      <div className="request-notice request-notice--error" role="alert">
+        <p>{copy.loadFailed}</p>
+        <button className="share-button" type="button" onClick={request.retry}>{copy.retry}</button>
+      </div>
+    )
+  }
+  return null
+}
+
+function RecentArticles({ language, listState, listUrl, copy }) {
+  const load = useCallback((signal) => getArticlePage({ page: 1, limit: 3, language, signal }), [language])
+  const request = useArticleRequest(load)
+  return (
+    <div className="not-found-suggestions">
+      <RequestNotice request={request} copy={copy} />
+      {request.data?.items.length > 0 && <>
+        <p>{copy.recentSuggestion}</p>
+        <ul>
+          {request.data.items.map((item) => (
+            <li key={item.id}>
+              <Link to={getArticleUrl(item.id, listState)} state={{ listUrl }}>{item.title}</Link>
+            </li>
+          ))}
+        </ul>
+      </>}
+    </div>
+  )
+}
+
+function RelatedStories({ articleId, language, listState, listUrl, copy }) {
+  const load = useCallback((signal) => getRelatedArticles(articleId, 3, language, { signal }), [articleId, language])
+  const request = useArticleRequest(load)
+  return (
+    <section className="related-stories" aria-labelledby="related-stories-title">
+      <div className="related-stories__heading">
+        <div>
+          <p className="eyebrow">RELATED STORIES</p>
+          <h2 id="related-stories-title">{copy.relatedStories}</h2>
+        </div>
+        <Link to={listUrl}>{copy.viewAllArticles} <span aria-hidden="true">→</span></Link>
+      </div>
+      <RequestNotice request={request} copy={copy} />
+      {request.status === 'success' && (request.data.length ? (
+        <div className="related-stories__grid">
+          {request.data.map((article) => (
+            <RelatedArticleCard key={article.id} article={article} listState={listState} listUrl={listUrl} />
+          ))}
+        </div>
+      ) : <p className="request-notice">{copy.noRelatedArticles}</p>)}
+    </section>
+  )
+}
+
 function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setViewMode }) {
   const copy = getMessages(language)
-  const articlePage = getArticlePage({ page: currentPage, language })
-  const displayedArticles = viewMode === 'card'
-    ? getAllArticles(language)
-    : articlePage.items
+  const load = useCallback(async (signal) => {
+    if (viewMode === 'list') return getArticlePage({ page: currentPage, language, signal })
+    const items = await getAllArticles(language, { signal })
+    return { items, totalItems: items.length, page: 1, totalPages: 1 }
+  }, [language, currentPage, viewMode])
+  const request = useArticleRequest(load)
+  const articlePage = request.data
   const listState = {
     language,
-    page: viewMode === 'card' ? 1 : articlePage.page,
+    page: viewMode === 'card' ? 1 : articlePage?.page ?? currentPage,
     viewMode,
   }
 
@@ -468,11 +531,11 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
         <div className="article-toolbar">
           <div>
             <h2 id="articles-title">{copy.allArticles}</h2>
-            <p>
+            {articlePage && <p>
               {viewMode === 'card'
                 ? copy.articleCountAll(articlePage.totalItems)
                 : copy.articleCount(articlePage)}
-            </p>
+            </p>}
           </div>
 
           <div className="view-toggle" aria-label={copy.viewModeLabel}>
@@ -493,13 +556,15 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
           </div>
         </div>
 
-        <div className={`article-collection article-collection--${viewMode}`}>
-          {displayedArticles.map((article) => (
+        <RequestNotice request={request} copy={copy} />
+        {articlePage?.items.length === 0 && <p className="request-notice" role="status">{copy.noArticles}</p>}
+        <div className={`article-collection article-collection--${viewMode}`} aria-busy={request.status === 'loading'}>
+          {articlePage?.items.map((article) => (
             <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
           ))}
         </div>
 
-        {viewMode === 'list' && (
+        {viewMode === 'list' && articlePage?.totalItems > 0 && (
           <Pagination
             currentPage={articlePage.page}
             totalPages={articlePage.totalPages}
@@ -516,10 +581,11 @@ function ArticleRoutePage({ language, listState }) {
   const { articleId } = useParams()
   const location = useLocation()
   const copy = getMessages(language)
-  const article = getArticleById(articleId, language)
-  const relatedArticles = getRelatedArticles(articleId, 3, language)
-  const recentArticles = getArticlePage({ page: 1, limit: 3, language }).items
-  const listUrl = location.state?.listUrl ?? getListUrl({
+  const load = useCallback((signal) => getArticleById(articleId, language, { signal }), [articleId, language])
+  const request = useArticleRequest(load)
+  const article = request.data
+  const savedListUrl = location.state?.listUrl
+  const listUrl = savedListUrl ? `${getLocalizedPath(savedListUrl.split('?')[0], language)}${savedListUrl.includes('?') ? `?${savedListUrl.split('?')[1]}` : ''}` : getListUrl({
     language,
     page: 1,
     viewMode: 'card',
@@ -531,10 +597,22 @@ function ArticleRoutePage({ language, listState }) {
 
   useEffect(() => {
     if (article) applyArticleMetadata(article, language)
-    else applyNotFoundMetadata(language)
+    else if (request.status === 'success') applyNotFoundMetadata(language)
+    else resetArticleMetadata(language)
 
     return () => resetArticleMetadata(language)
-  }, [article, language])
+  }, [article, language, request.status])
+
+  if (request.status !== 'success') {
+    return (
+      <main id="main-content" className="route-placeholder">
+        <section className="route-placeholder__panel" aria-label={copy.articleInfo}>
+          <RequestNotice request={request} copy={copy} />
+          <Link className="back-link" to={listUrl}><span aria-hidden="true">←</span> {copy.backToArticles}</Link>
+        </section>
+      </main>
+    )
+  }
 
   if (!article) {
     return (
@@ -546,18 +624,7 @@ function ArticleRoutePage({ language, listState }) {
           <Link className="back-link" to={listUrl}>
             <span aria-hidden="true">←</span> {copy.backToArticles}
           </Link>
-          <div className="not-found-suggestions">
-            <p>{copy.recentSuggestion}</p>
-            <ul>
-              {recentArticles.map((item) => (
-                <li key={item.id}>
-                  <Link to={getArticleUrl(item.id, listState)} state={{ listUrl }}>
-                    {item.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <RecentArticles language={language} listState={listState} listUrl={listUrl} copy={copy} />
         </section>
       </main>
     )
@@ -616,25 +683,7 @@ function ArticleRoutePage({ language, listState }) {
         </div>
       </article>
 
-      <section className="related-stories" aria-labelledby="related-stories-title">
-        <div className="related-stories__heading">
-          <div>
-            <p className="eyebrow">RELATED STORIES</p>
-            <h2 id="related-stories-title">{copy.relatedStories}</h2>
-          </div>
-          <Link to={listUrl}>{copy.viewAllArticles} <span aria-hidden="true">→</span></Link>
-        </div>
-        <div className="related-stories__grid">
-          {relatedArticles.map((relatedArticle) => (
-            <RelatedArticleCard
-              key={relatedArticle.id}
-              article={relatedArticle}
-              listState={listState}
-              listUrl={listUrl}
-            />
-          ))}
-        </div>
-      </section>
+      <RelatedStories articleId={articleId} language={language} listState={listState} listUrl={listUrl} copy={copy} />
     </main>
   )
 }
@@ -644,9 +693,7 @@ export default function App() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const language = normalizeLanguage(location.pathname.startsWith('/en') ? 'en' : 'ko')
-  const currentPage = getArticlePage({
-    page: getPageNumber(searchParams.get('page')),
-  }).page
+  const currentPage = getPageNumber(searchParams.get('page'))
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'card'
   const copy = getMessages(language)
   const listState = { language, page: currentPage, viewMode }
