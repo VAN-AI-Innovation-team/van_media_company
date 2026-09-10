@@ -21,6 +21,7 @@ import {
 } from './articleMetadata.js'
 import { getMessages, normalizeLanguage } from './i18n.js'
 import { copyShareUrl, getShareTargets } from './share.js'
+import MediaOutreachPage from './MediaOutreachPage.jsx'
 import './App.css'
 
 function getPageNumber(value) {
@@ -716,6 +717,8 @@ export default function App() {
           path="/en/articles/:articleId"
           element={<ArticleRoutePage language={language} listState={listState} />}
         />
+        <Route path="/media-outreach" element={<MediaOutreachPage />} />
+        <Route path="/en/media-outreach" element={<MediaOutreachPage />} />
       </Routes>
 
       <footer>
