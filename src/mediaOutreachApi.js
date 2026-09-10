@@ -3,9 +3,13 @@
 // 엔드포인트 목록 출처: https://github.com/VAN-AI-Innovation/media-outreach README "주요 API" 표 + 컨트롤러 소스.
 // 이 모듈을 붙일 화면(운영자용 아웃리치 페이지)은 아직 없고, 우선 API 연동 레이어만 준비한다.
 
+// 배포된 media-outreach 백엔드(Railway). VITE_MEDIA_OUTREACH_API_URL이 있으면 그걸 쓰고,
+// 없으면 이 주소로 붙는다(로컬 백엔드를 띄웠다면 .env.local에 http://localhost:8080을 지정).
+const MEDIA_OUTREACH_BACKEND_ORIGIN = 'https://backend-production-2e28.up.railway.app'
+
 function getBaseUrl() {
   const configured = import.meta.env.VITE_MEDIA_OUTREACH_API_URL
-  return (configured || 'http://localhost:8080').replace(/\/+$/, '')
+  return (configured || MEDIA_OUTREACH_BACKEND_ORIGIN).replace(/\/+$/, '')
 }
 
 export class MediaOutreachApiError extends Error {

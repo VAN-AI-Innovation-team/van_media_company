@@ -94,7 +94,7 @@ Vercel은 생성된 기사별 정적 HTML을 우선 제공하고, 존재하지 �
 
 ### 환경변수
 
-`VITE_MEDIA_OUTREACH_API_URL`에 배포된 백엔드 주소를 설정합니다(`.env.example` 참고, 로컬에서는 `.env.local`로 복사해서 사용). 값이 없으면 `http://localhost:8080`으로 접속을 시도합니다.
+`VITE_MEDIA_OUTREACH_API_URL`을 비워두면 배포된 Railway 백엔드(`https://backend-production-2e28.up.railway.app`)로 붙습니다. 로컬 백엔드를 띄웠다면 `.env.local`로 복사해 `http://localhost:8080` 등으로 지정하세요(`.env.example` 참고).
 
 배포된 프론트 도메인에서 API를 호출하려면 media-outreach 백엔드의 `FRONTEND_ORIGIN` 환경변수(CORS 허용 오리진)에 이 프로젝트의 배포 주소가 포함되어 있어야 합니다.
 
