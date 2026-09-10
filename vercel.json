@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/articles",
+      "destination": "https://press-media-recommendation-backend.onrender.com/api/articles"
+    },
+    {
+      "source": "/api/articles/:path*",
+      "destination": "https://press-media-recommendation-backend.onrender.com/api/articles/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

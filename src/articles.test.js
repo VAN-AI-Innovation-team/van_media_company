@@ -1,127 +1,100 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import {
-  ARTICLES_PER_PAGE,
-  articles,
-  getAllArticles,
-  getArticleById,
-  getArticlePage,
-  getRelatedArticles,
-  localizeArticle,
-} from './articles.js'
+import { setTimeout as delay } from 'node:timers/promises'
+import ko from '../tests/fixtures/articles.ko.json' with { type: 'json' }
+import en from '../tests/fixtures/articles.en.json' with { type: 'json' }
+import { ArticleApiError, createArticleClient } from './articles.js'
 
-test('six full-article records are available with source bylines', () => {
-  assert.equal(articles.length, 6)
-  assert.equal(new Set(articles.map((article) => article.id)).size, 6)
-
-  for (const article of articles) {
-    assert.ok(article.title)
-    assert.ok(article.summary)
-    assert.ok(article.author.id)
-    assert.match(article.author.name, / · /)
-    assert.match(article.author.name, /기자$/)
-    assert.match(article.author.nameEn, / · /)
-    assert.equal('source' in article, false)
-    assert.equal(article.highlights.length, 2)
-    assert.ok(article.body.length >= 5)
-    assert.ok(article.translations.en.title)
-    assert.ok(article.translations.en.summary)
-    assert.ok(article.translations.en.body.length >= 5)
-  }
-})
-
-test('card data returns all six articles in either language', () => {
-  const koreanCards = getAllArticles('ko')
-  const englishCards = getAllArticles('en')
-
-  assert.equal(koreanCards.length, 6)
-  assert.equal(englishCards.length, 6)
-  assert.equal(englishCards[0].title, articles[0].translations.en.title)
-})
-
-test('pagination returns three records and clamps out-of-range pages', () => {
-  const firstPage = getArticlePage()
-  const lastPage = getArticlePage({ page: 99 })
-
-  assert.equal(firstPage.items.length, ARTICLES_PER_PAGE)
-  assert.equal(firstPage.page, 1)
-  assert.equal(firstPage.totalPages, 2)
-  assert.equal(lastPage.page, 2)
-  assert.equal(lastPage.items.length, 3)
-})
-
-test('English localization applies to list and detail data', () => {
-  const englishPage = getArticlePage({ page: 1, language: 'en' })
-  const englishArticle = getArticleById(1, 'en')
-
-  assert.equal(englishPage.items[0].title, englishArticle.title)
-  assert.equal(englishArticle.author.name, 'Yonhap News Agency · Kim Yoo-hyang')
-  assert.equal(englishArticle.category, 'Finance & Markets')
-  assert.match(englishArticle.image.alt, /Hana Bank dealing room/)
-  assert.equal(englishArticle.image.src, '/images/internal-review/01-kospi.jpg')
-  assert.equal(englishArticle.image.width, 1200)
-  assert.match(englishArticle.image.caption, /Hana Bank headquarters/)
-  assert.match(englishArticle.image.credit, /Yonhap News Agency/)
-})
-
-test('inline image localization keeps media fields and translates its copy', () => {
-  const example = {
-    ...articles[1],
-    inlineImages: [{
-      id: 'chart',
-      afterParagraph: 2,
-      src: '/images/chart.webp',
-      width: 1200,
-      height: 800,
-      alt: '한국어 설명',
-      caption: '한국어 캡션',
-      credit: '사진: VAN NEWS',
-    }],
-    translations: {
-      ...articles[1].translations,
-      en: {
-        ...articles[1].translations.en,
-        inlineImages: [{
-          id: 'chart',
-          alt: 'English description',
-          caption: 'English caption',
-          credit: 'Photo: VAN NEWS',
-        }],
-      },
+function fixtureClient(handler) {
+  const calls = []
+  const client = createArticleClient({
+    baseUrl: 'https://api.example.test/api/',
+    fetchImpl: async (url, options) => {
+      calls.push({ url: new URL(url), options })
+      return handler(new URL(url), options)
     },
+  })
+  return { client, calls }
+}
+
+test('all four endpoints use localized API responses and preserve nested data', async () => {
+  const { client, calls } = fixtureClient((url) => {
+    const records = url.searchParams.get('language') === 'en' ? en : ko
+    if (url.pathname.endsWith('/page')) return Response.json({ items: records.slice(3), page: 2, limit: 3, totalItems: 6, totalPages: 2 })
+    if (url.pathname.endsWith('/related')) return Response.json(records.slice(3))
+    if (url.pathname.endsWith('/1')) return Response.json(records[0])
+    return Response.json(records)
+  })
+  assert.equal((await client.getAllArticles('ko')).length, 6)
+  const all = await client.getAllArticles('en')
+  assert.equal(all[0].title, en[0].title)
+  assert.notEqual(all[0].title, ko[0].title)
+  assert.deepEqual(all[0].image, en[0].image)
+  assert.deepEqual((await client.getArticlePage({ page: 2, language: 'en' })).items.map((a) => a.id), [4, 5, 6])
+  assert.deepEqual((await client.getArticleById('1', 'en')).body, en[0].body)
+  assert.deepEqual((await client.getRelatedArticles(1, 3, 'en')).map((a) => a.id), [4, 5, 6])
+  assert.deepEqual(calls.map(({ url }) => url.pathname), ['/api/articles', '/api/articles', '/api/articles/page', '/api/articles/1', '/api/articles/1/related'])
+  assert.equal(calls[2].url.searchParams.get('limit'), '3')
+  assert.equal(calls[4].url.searchParams.get('language'), 'en')
+})
+
+test('out-of-range pages refetch the last server page', async () => {
+  const { client, calls } = fixtureClient((url) => {
+    const page = Number(url.searchParams.get('page'))
+    return Response.json({ items: page > 2 ? [] : ko.slice(3), page, limit: 3, totalItems: 6, totalPages: 2 })
+  })
+  const data = await client.getArticlePage({ page: 99 })
+  assert.equal(data.page, 2)
+  assert.equal(data.items.length, 3)
+  assert.equal(calls.length, 2)
+})
+
+test('invalid pagination inputs use safe defaults and empty results remain valid', async () => {
+  const { client, calls } = fixtureClient(() => Response.json({ items: [], page: 1, limit: 3, totalItems: 0, totalPages: 1 }))
+  assert.deepEqual((await client.getArticlePage({ page: Infinity, limit: -1, language: 'fr' })).items, [])
+  assert.equal(calls[0].url.search, '?page=1&limit=3&language=ko')
+})
+
+test('only a detail 404 means not found; outages and invalid JSON reject', async () => {
+  const missing = fixtureClient(() => Response.json({ error: 'missing' }, { status: 404 })).client
+  assert.equal(await missing.getArticleById(999), null)
+  await assert.rejects(missing.getRelatedArticles(1), { status: 404 })
+  const unavailable = fixtureClient(() => new Response('Unavailable', { status: 503 })).client
+  await assert.rejects(unavailable.getArticleById(1), { status: 503 })
+  const invalid = fixtureClient(() => new Response('<html>Wrong rewrite</html>')).client
+  await assert.rejects(invalid.getAllArticles(), ArticleApiError)
+  const network = fixtureClient(() => { throw new TypeError('Failed to fetch') }).client
+  await assert.rejects(network.getAllArticles(), TypeError)
+})
+
+test('invalid ids never become requests or output paths', async () => {
+  const { client, calls } = fixtureClient(() => { throw new Error('Must not fetch') })
+  for (const id of ['missing', '../page', '0', '9223372036854775808', null]) {
+    assert.equal(await client.getArticleById(id), null)
+    assert.deepEqual(await client.getRelatedArticles(id), [])
   }
-  const localized = localizeArticle(example, 'en')
-
-  assert.equal(localized.inlineImages[0].src, '/images/chart.webp')
-  assert.equal(localized.inlineImages[0].width, 1200)
-  assert.equal(localized.inlineImages[0].afterParagraph, 2)
-  assert.equal(localized.inlineImages[0].alt, 'English description')
-  assert.equal(localized.inlineImages[0].credit, 'Photo: VAN NEWS')
+  assert.equal(calls.length, 0)
 })
 
-test('article images include accessible media metadata', () => {
-  assert.equal(articles.length, 6)
-
-  for (const article of articles) {
-    assert.ok(article.image.width)
-    assert.ok(article.image.height)
-    assert.ok(article.image.alt)
-    assert.ok(article.image.caption)
-    assert.ok(article.image.credit)
-    assert.equal(article.image.internalReviewOnly, true)
-    assert.match(article.image.sourceUrl, /^https:\/\//)
+test('nullable media and arrays render safely; malformed payloads reject', async () => {
+  const { client } = fixtureClient(() => Response.json({ ...ko[0], body: null, highlights: null, image: { src: null } }))
+  const article = await client.getArticleById(1)
+  assert.deepEqual(article.body, [])
+  assert.deepEqual(article.highlights, [])
+  assert.equal(article.image, null)
+  for (const data of [{}, [{ ...ko[0], body: 'not an array' }], [{ ...ko[0], author: null }]]) {
+    await assert.rejects(fixtureClient(() => Response.json(data)).client.getAllArticles(), ArticleApiError)
   }
 })
 
-test('related stories exclude the current article and honor the limit', () => {
-  const related = getRelatedArticles(1, 3, 'en')
-
-  assert.equal(related.length, 3)
-  assert.equal(related.some((article) => article.id === 1), false)
-  assert.equal(related.every((article) => article.translations.en), true)
-})
-
-test('unknown article ids return no article or related stories', () => {
-  assert.equal(getArticleById('missing'), undefined)
-  assert.deepEqual(getRelatedArticles('missing'), [])
+test('abort and timeout cancel pending fetches without returning fixture data', async () => {
+  const fetchImpl = async (_url, { signal }) => {
+    await delay(1000, null, { signal })
+    return Response.json(ko)
+  }
+  const controller = new AbortController()
+  const pending = createArticleClient({ fetchImpl }).getAllArticles('ko', { signal: controller.signal })
+  controller.abort()
+  await assert.rejects(pending, { name: 'AbortError' })
+  await assert.rejects(createArticleClient({ fetchImpl, timeoutMs: 10 }).getAllArticles())
 })

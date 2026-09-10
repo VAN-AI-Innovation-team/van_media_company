@@ -9,6 +9,36 @@ export function getShareTargets({ title, url }) {
   }
 }
 
+export function supportsNativeShare(navigatorObject, shareData) {
+  if (typeof navigatorObject?.share !== 'function') return false
+  if (!shareData || typeof navigatorObject.canShare !== 'function') return true
+
+  try {
+    return navigatorObject.canShare(shareData)
+  } catch {
+    return false
+  }
+}
+
+export async function shareWithDevice({ title, text, url }, navigatorObject) {
+  const shareData = { title, text, url }
+
+  if (!supportsNativeShare(navigatorObject, shareData)) {
+    return { status: 'unsupported' }
+  }
+
+  try {
+    await navigatorObject.share(shareData)
+    return { status: 'shared' }
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      return { status: 'canceled' }
+    }
+
+    return { status: 'failed', error }
+  }
+}
+
 function legacyCopy(text) {
   const textArea = document.createElement('textarea')
   textArea.value = text
