@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/generate-static-pages.js",
     "lint": "oxlint",
-    "test": "node --test src/articles.test.js src/share.test.js",
+    "test": "node --test src/articles.test.js src/share.test.js src/mediaOutreachApi.test.js",
     "test:static": "node --test scripts/static-pages.test.js",
     "check": "npm run lint && npm run test && npm run build && npm run test:static",
     "preview": "vite preview"
