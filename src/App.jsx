@@ -793,7 +793,6 @@ export default function App() {
 
       <footer>
         <span>VAN NEWS</span>
-        <p>{copy.footerDescription}</p>
       </footer>
     </div>
   )
