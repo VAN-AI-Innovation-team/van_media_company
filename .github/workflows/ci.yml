@@ -32,3 +32,11 @@ jobs:
 
       - name: Lint, test and build
         run: npm run check
+
+      - name: Install browser for layout and navigation checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Check the production build in a browser
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_TEST_PREVIEW: '1'

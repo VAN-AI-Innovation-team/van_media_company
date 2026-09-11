@@ -271,6 +271,42 @@
   display: grid;
 }
 
+.articles {
+  scroll-margin-top: 100px;
+}
+
+.article-results {
+  position: relative;
+}
+
+.article-results--refreshing .article-collection {
+  opacity: 0.45;
+}
+
+.article-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(246 247 248 / 25%);
+  backdrop-filter: blur(1px);
+}
+
+.article-loading-overlay p {
+  max-width: 100%;
+  margin: 0;
+  padding: 16px 22px;
+  border: 1px solid rgb(94 137 148 / 25%);
+  border-radius: 12px;
+  color: var(--color-navy);
+  background: rgb(237 243 247 / 85%);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .article-collection--card {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
@@ -505,6 +541,8 @@ html[lang='en'] .article-detail__article > .article-visual strong {
 }
 
 .article-collection--list .article-visual {
+  min-width: 0;
+  width: 100%;
   min-height: 176px;
 }
 
@@ -1960,6 +1998,8 @@ footer p {
 .react-datepicker__day:hover,
 .react-datepicker__time-list-item:hover {
   background: var(--color-soft-blue) !important;
+}
+
 .request-notice {
   padding: 1.5rem;
   color: var(--color-muted, #526176);
