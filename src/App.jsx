@@ -27,6 +27,7 @@ import {
   shareWithDevice,
   supportsNativeShare,
 } from './share.js'
+import MediaOutreachPage from './MediaOutreachPage.jsx'
 import './App.css'
 
 function getPageNumber(value) {
@@ -786,6 +787,8 @@ export default function App() {
           path="/en/articles/:articleId"
           element={<ArticleRoutePage language={language} listState={listState} />}
         />
+        <Route path="/media-outreach" element={<MediaOutreachPage />} />
+        <Route path="/en/media-outreach" element={<MediaOutreachPage />} />
       </Routes>
 
       <footer>
