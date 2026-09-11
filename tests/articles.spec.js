@@ -98,6 +98,78 @@ test('out-of-range direct list URL and mobile detail layout', async ({ page }) =
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('site styles keep desktop and mobile content within the viewport', async ({ page }) => {
+  await page.route('**/api/articles**', serveArticles)
+  await page.goto('/?view=list')
+  await expect(page.locator('.article-item')).toHaveCount(3)
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 })
+    const layout = await page.evaluate(() => ({
+      pageWidth: getComputedStyle(document.documentElement).getPropertyValue('--page-width').trim(),
+      margin: getComputedStyle(document.body).margin,
+      boxSizing: getComputedStyle(document.querySelector('.articles')).boxSizing,
+      articleBounds: document.querySelector('.articles').getBoundingClientRect().toJSON(),
+      paginationBounds: document.querySelector('.pagination').getBoundingClientRect().toJSON(),
+      scrollWidth: document.documentElement.scrollWidth,
+      imageBounds: document.querySelector('.article-visual').getBoundingClientRect().toJSON(),
+      copyBounds: document.querySelector('.article-copy').getBoundingClientRect().toJSON(),
+    }))
+    expect(layout.pageWidth).toBe('1180px')
+    expect(layout.margin).toBe('0px')
+    expect(layout.boxSizing).toBe('border-box')
+    expect(layout.articleBounds.width).toBeLessThanOrEqual(1180)
+    expect(layout.articleBounds.left).toBeGreaterThanOrEqual(16)
+    expect(layout.paginationBounds.right).toBeLessThanOrEqual(width - 16)
+    expect(layout.scrollWidth).toBeLessThanOrEqual(width)
+    expect(layout.imageBounds.right).toBeLessThanOrEqual(layout.copyBounds.left)
+  }
+})
+
+test('pagination keeps the previous list under a translucent loading layer', async ({ page }) => {
+  let delayed
+  await page.route('**/api/articles**', route => {
+    const url = new URL(route.request().url())
+    if (url.searchParams.get('page') === '2') delayed = route
+    else return serveArticles(route)
+  })
+  await page.goto('/?view=list')
+  await expect(page.locator('.article-item')).toHaveCount(3)
+  const height = (await page.locator('.article-results').boundingBox()).height
+  await page.getByRole('button', { name: '2페이지', exact: true }).click()
+  await expect(page.locator('.article-loading-overlay')).toBeVisible()
+  await expect(page.locator('.article-item')).toHaveCount(3)
+  await expect(page.locator('.article-item h2').first()).toHaveText(ko[0].title)
+  await expect(page.locator('.article-collection')).toHaveAttribute('inert', '')
+  await expect(page.getByRole('button', { name: '2페이지', exact: true })).toBeDisabled()
+  expect((await page.locator('.article-results').boundingBox()).height).toBeCloseTo(height, 0)
+  const opacity = await page.locator('.article-collection').evaluate(el => Number(getComputedStyle(el).opacity))
+  expect(opacity).toBeGreaterThan(0)
+  expect(opacity).toBeLessThan(1)
+  await expect.poll(() => Boolean(delayed)).toBe(true)
+  await serveArticles(delayed)
+  await expect(page.locator('.article-loading-overlay')).toHaveCount(0)
+  await expect(page.locator('.article-item h2').first()).toHaveText(ko[3].title)
+  await expect(page.getByRole('button', { name: '2페이지', exact: true })).toHaveAttribute('aria-current', 'page')
+  await page.getByRole('button', { name: '1페이지', exact: true }).click()
+  await expect(page.locator('.article-item h2').first()).toHaveText(ko[0].title)
+})
+
+test('retained Korean articles are cleared when switching languages', async ({ page }) => {
+  let delayed
+  await page.route('**/api/articles**', route => {
+    if (route.request().url().includes('language=en')) delayed = route
+    else return serveArticles(route)
+  })
+  await page.goto('/?view=list')
+  await expect(page.locator('.article-item')).toHaveCount(3)
+  await page.getByRole('button', { name: 'English', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('Loading')
+  await expect(page.locator('.article-item')).toHaveCount(0)
+  await expect.poll(() => Boolean(delayed)).toBe(true)
+  await serveArticles(delayed)
+  await expect(page.locator('.article-item h2').first()).toHaveText(en[0].title)
+})
+
 test('live API through the local proxy @live', async ({ page }) => {
   test.skip(!process.env.TEST_LIVE_API, 'Enable TEST_LIVE_API=1 to check the deployed backend')
   test.setTimeout(180000)

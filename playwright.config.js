@@ -10,7 +10,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 900 },
   },
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 5175 --strictPort',
+    command: `npm run ${process.env.PLAYWRIGHT_TEST_PREVIEW ? 'preview' : 'dev'} -- --host 127.0.0.1 --port 5175 --strictPort`,
     url: 'http://127.0.0.1:5175',
     reuseExistingServer: !process.env.CI,
   },

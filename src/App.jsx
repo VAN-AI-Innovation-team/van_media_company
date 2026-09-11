@@ -398,7 +398,7 @@ function ShareTools({ article, copy }) {
   )
 }
 
-function Pagination({ currentPage, totalPages, onPageChange, copy }) {
+function Pagination({ currentPage, totalPages, onPageChange, copy, pending = false }) {
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
 
   return (
@@ -406,7 +406,7 @@ function Pagination({ currentPage, totalPages, onPageChange, copy }) {
       <button
         className="pagination__step"
         type="button"
-        disabled={currentPage === 1}
+        disabled={pending || currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
       >
         <span aria-hidden="true">←</span> {copy.previous}
@@ -420,6 +420,7 @@ function Pagination({ currentPage, totalPages, onPageChange, copy }) {
             type="button"
             aria-current={currentPage === pageNumber ? 'page' : undefined}
             aria-label={copy.pageLabel(pageNumber)}
+            disabled={pending}
             onClick={() => onPageChange(pageNumber)}
           >
             {pageNumber}
@@ -430,7 +431,7 @@ function Pagination({ currentPage, totalPages, onPageChange, copy }) {
       <button
         className="pagination__step"
         type="button"
-        disabled={currentPage === totalPages}
+        disabled={pending || currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
       >
         {copy.next} <span aria-hidden="true">→</span>
@@ -505,8 +506,9 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
     const items = await getAllArticles(language, { signal })
     return { items, totalItems: items.length, page: 1, totalPages: 1 }
   }, [language, currentPage, viewMode])
-  const request = useArticleRequest(load)
+  const request = useArticleRequest(load, { retainKey: `${language}:${viewMode}` })
   const articlePage = request.data
+  const isRefreshing = request.status === 'loading' && Boolean(articlePage)
   const listState = {
     language,
     page: viewMode === 'card' ? 1 : articlePage?.page ?? currentPage,
@@ -557,12 +559,19 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
           </div>
         </div>
 
-        <RequestNotice request={request} copy={copy} />
+        {!isRefreshing && <RequestNotice request={request} copy={copy} />}
         {articlePage?.items.length === 0 && <p className="request-notice" role="status">{copy.noArticles}</p>}
-        <div className={`article-collection article-collection--${viewMode}`} aria-busy={request.status === 'loading'}>
-          {articlePage?.items.map((article) => (
-            <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
-          ))}
+        <div className={`article-results${isRefreshing ? ' article-results--refreshing' : ''}`}>
+          <div className={`article-collection article-collection--${viewMode}`} aria-busy={request.status === 'loading'} inert={isRefreshing}>
+            {articlePage?.items.map((article) => (
+              <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
+            ))}
+          </div>
+          {isRefreshing && (
+            <div className="article-loading-overlay">
+              <p role="status">{copy.loadingArticles}</p>
+            </div>
+          )}
         </div>
 
         {viewMode === 'list' && articlePage?.totalItems > 0 && (
@@ -571,6 +580,7 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
             totalPages={articlePage.totalPages}
             onPageChange={setCurrentPage}
             copy={copy}
+            pending={isRefreshing}
           />
         )}
       </section>
@@ -720,7 +730,7 @@ export default function App() {
 
   const changePage = (page) => {
     updateSearch({ page: page > 1 ? page : null })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    document.querySelector('.articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const changeViewMode = (mode) => {
