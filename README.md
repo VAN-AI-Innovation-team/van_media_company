@@ -96,3 +96,25 @@ npm run dev
 브라우저 회귀 테스트는 `npx playwright install chromium` 후 `npm run test:e2e`로 실행합니다. 이 테스트는 실제 응답 형식의 fixture를 사용해 페이지 이동, 언어 전환 중 늦은 응답, 404/서버 오류 구분, 재시도, 빈 목록, 모바일 레이아웃을 검증합니다. 설치된 Edge를 사용하려면 `PLAYWRIGHT_BROWSER_CHANNEL=msedge`를 설정합니다. 실제 API 프록시 검증은 `TEST_LIVE_API=1`을 설정한 뒤 `npx playwright test --grep @live`로 실행합니다.
 
 Vercel은 생성된 기사별 정적 HTML을 우선 제공하고, 존재하지 않는 경로는 `vercel.json`의 SPA fallback으로 React Router에 연결합니다.
+
+## media-outreach 백엔드 연동
+
+`src/mediaOutreachApi.js`는 언론 컨택 자동화 백엔드([media-outreach](https://github.com/VAN-AI-Innovation/media-outreach))의 REST API를 감싸는 클라이언트입니다. 이 화면(기자 추천/메일 발송용 운영자 페이지)은 아직 없고, 향후 페이지에서 바로 가져다 쓸 수 있도록 API 연동 레이어만 먼저 준비했습니다.
+
+흐름은 다음 순서입니다.
+
+1. **보도자료** — `PressReleaseApi.create/list/get`
+2. **기자 추천** — media-outreach 백엔드에는 추천 전용 엔드포인트가 없어, `JournalistApi.list()`로 가져온 기자 목록과 보도자료 키워드를 `recommendJournalists(pressRelease, journalists)`로 매칭해 클라이언트에서 점수를 매깁니다(관심 키워드/출입처 일치 개수 기준).
+3. **개인화 메일 생성** — `MailDraftApi.generate`(Gemini 초안 생성) → 필요 시 `edit`/`regenerate` → `approve`. 승인(`APPROVED`) 상태여야 다음 단계에서 발송 대상으로 확정됩니다.
+4. **발송** — `MailSendApi.confirmTargets`(중복/수신거부 검증 포함)로 발송 작업을 큐에 넣고, `pause`/`resume`/`cancel`/`reschedule`로 제어합니다. 실제 발송은 백엔드 워커가 처리합니다.
+5. **후속 연락** — `FollowUpApi.pending/byJournalist/send/timeline`으로 미회신 기자의 후속 연락 대상을 조회하고 발송합니다.
+
+### 환경변수
+
+`VITE_MEDIA_OUTREACH_API_URL`을 비워두면 배포된 Railway 백엔드(`https://backend-production-2e28.up.railway.app`)로 붙습니다. 로컬 백엔드를 띄웠다면 `.env.local`로 복사해 `http://localhost:8080` 등으로 지정하세요(`.env.example` 참고).
+
+배포된 프론트 도메인에서 API를 호출하려면 media-outreach 백엔드의 `FRONTEND_ORIGIN` 환경변수(CORS 허용 오리진)에 이 프로젝트의 배포 주소가 포함되어 있어야 합니다.
+
+### 테스트
+
+`recommendJournalists`의 매칭/점수 로직은 `src/mediaOutreachApi.test.js`에서 `npm run test`로 검증합니다. 나머지 API 함수는 실제 백엔드 호출을 감싸는 얇은 래퍼라 별도 유닛 테스트를 두지 않았습니다.
