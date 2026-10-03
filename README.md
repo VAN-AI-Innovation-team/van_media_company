@@ -57,7 +57,7 @@ PDF의 `2-5 언론사 미디어 플랫폼` 요구사항과 연결해, 프론트�
 - Windows·모바일의 기기 기본 공유창을 여는 Web Share API 버튼과 미지원 환경의 링크 복사 대체 동작
 - 미지원 환경의 Clipboard API 링크 복사와 추가 대체 동작
 - X·Facebook 아이콘 공유, Instagram 링크 복사 안내와 `aria-live` 결과 안내
-- VAN Conference와 같은 Deep Navy·White·Off-white 계열의 반응형 디자인
+- VAN NEWS 제호·분야 탐색·대표 기사와 주요 기사를 3단으로 편집한 신문형 반응형 홈, 종이색·먹색·붉은 표식의 기자 작업실 디자인
 - 기사별 title·description·Open Graph·Twitter 메타데이터와 Article JSON-LD 갱신
 - 대표 이미지가 있는 기사의 Open Graph·X 대형 이미지 카드와 `NewsArticle` 이미지 메타데이터
 - 한국어/영어 전환과 기사 6건의 영문 제목·요약·핵심 포인트

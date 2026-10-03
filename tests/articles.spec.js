@@ -53,7 +53,7 @@ test('loading, server error, retry and empty state', async ({ page }) => {
   await page.unroute('**/api/articles?**')
   await page.route('**/api/articles?**', (route) => route.fulfill({ json: [] }))
   await page.getByRole('button', { name: '다시 시도' }).click()
-  await expect(page.getByRole('status')).toHaveText('아직 등록된 기사가 없습니다.')
+  await expect(page.getByRole('status')).toContainText('아직 등록된 기사가 없습니다.')
 })
 
 test('late Korean response cannot overwrite the English route', async ({ page }) => {
@@ -117,7 +117,7 @@ test('site styles keep desktop and mobile content within the viewport', async ({
     expect(layout.pageWidth).toBe('1180px')
     expect(layout.margin).toBe('0px')
     expect(layout.boxSizing).toBe('border-box')
-    expect(layout.articleBounds.width).toBeLessThanOrEqual(1180)
+    expect(layout.articleBounds.width).toBeLessThanOrEqual(1320)
     expect(layout.articleBounds.left).toBeGreaterThanOrEqual(16)
     expect(layout.paginationBounds.right).toBeLessThanOrEqual(width - 16)
     expect(layout.scrollWidth).toBeLessThanOrEqual(width)
