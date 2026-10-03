@@ -1,18 +1,19 @@
 :root {
-  --color-primary: #315f80;
-  --color-primary-dark: #0b2037;
-  --color-navy: #0b2037;
-  --color-navy-soft: #12304e;
-  --color-teal: #5e8994;
-  --color-sky: #8bb6d9;
-  --color-ink: #142536;
-  --color-muted: #66798a;
-  --color-bg: #f6f7f8;
-  --color-surface: #ffffff;
-  --color-border: #d8e1e8;
-  --color-soft-blue: #edf3f7;
-  --shadow-soft: 0 18px 45px rgb(16 42 67 / 8%);
+  --color-primary: #b65342;
+  --color-primary-dark: #963e32;
+  --color-navy: #183047;
+  --color-navy-soft: #27465b;
+  --color-teal: #567b77;
+  --color-sky: #e3a083;
+  --color-ink: #253238;
+  --color-muted: #6b736f;
+  --color-bg: #f8f4ea;
+  --color-surface: #fffdf8;
+  --color-border: #d8d0c0;
+  --color-soft-blue: #f3ece0;
+  --shadow-soft: 0 16px 36px rgb(59 45 30 / 8%);
   --page-width: 1180px;
+  --font-editorial: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", Batang, Georgia, serif;
   font-family:
     Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui,
     sans-serif;

@@ -2,13 +2,33 @@
   min-height: calc(100vh - 150px);
   padding: clamp(32px, 6vw, 78px) 28px 110px;
   background:
-    radial-gradient(circle at 88% 5%, rgb(139 182 217 / 16%), transparent 34%),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgb(120 83 56 / 3%) 79px 80px),
     var(--color-bg);
 }
 
 .reader-page__container {
+  position: relative;
   width: min(var(--page-width), 100%);
   margin-inline: auto;
+}
+
+.reader-page__stamp {
+  position: absolute;
+  top: 56px;
+  right: 55px;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-content: center;
+  border: 4px double var(--color-primary);
+  border-radius: 50%;
+  color: var(--color-primary);
+  font-family: Georgia, serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  transform: rotate(11deg);
 }
 
 .reader-page__home {
@@ -20,6 +40,7 @@
   font-size: 0.88rem;
   font-weight: 740;
   text-decoration: none;
+  text-underline-offset: 4px;
 }
 
 .reader-page__home:hover {
@@ -28,6 +49,7 @@
 }
 
 .reader-page__header {
+  position: relative;
   max-width: 740px;
   margin-bottom: 34px;
 }
@@ -44,9 +66,10 @@
   margin: 0;
   color: var(--color-navy);
   font-size: clamp(2.2rem, 4.5vw, 4rem);
-  font-weight: 850;
-  line-height: 1.17;
-  letter-spacing: -0.055em;
+  font-family: Georgia, 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-weight: 760;
+  line-height: 1.22;
+  letter-spacing: -0.045em;
   word-break: keep-all;
 }
 
@@ -61,10 +84,9 @@
 .reader-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px 24px;
   margin-bottom: 25px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-navy);
 }
 
 .reader-nav a {
@@ -72,11 +94,11 @@
   min-height: 42px;
   align-items: center;
   justify-content: center;
-  padding: 0 18px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
+  padding: 0 13px;
+  border: 0;
+  border-bottom: 3px solid transparent;
   color: var(--color-muted);
-  background: #fff;
+  background: transparent;
   font-size: 0.84rem;
   font-weight: 750;
   text-decoration: none;
@@ -84,23 +106,23 @@
 }
 
 .reader-nav a:hover {
-  border-color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
   color: var(--color-primary);
 }
 
 .reader-nav a[aria-current='page'] {
-  border-color: var(--color-navy);
-  color: #fff;
-  background: var(--color-navy);
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
 }
 
 .reader-panel {
   min-height: 290px;
   padding: clamp(22px, 4vw, 46px);
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 3px;
   background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 8px 8px 0 #eadfce;
 }
 
 .reader-panel--form {
@@ -128,10 +150,10 @@
   width: 100%;
   min-height: 50px;
   padding: 12px 15px;
-  border: 1px solid #bccbd6;
-  border-radius: 8px;
+  border: 1px solid #bfb5a4;
+  border-radius: 2px;
   color: var(--color-ink);
-  background: #fff;
+  background: #fffefa;
   font: inherit;
   font-size: 0.94rem;
 }
@@ -139,7 +161,7 @@
 .reader-search input::placeholder,
 .reader-field input::placeholder,
 .reader-field textarea::placeholder {
-  color: #8999a5;
+  color: #8d887c;
 }
 
 .reader-search input {
@@ -151,10 +173,10 @@
 .reader-primary-button {
   min-height: 50px;
   padding: 0 27px;
-  border: 1px solid var(--color-navy);
-  border-radius: 8px;
+  border: 1px solid var(--color-primary);
+  border-radius: 2px;
   color: #fff;
-  background: var(--color-navy);
+  background: var(--color-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.9rem;
@@ -165,7 +187,7 @@
 
 .reader-search button:hover,
 .reader-primary-button:hover {
-  background: var(--color-navy-soft);
+  background: #943d32;
 }
 
 .reader-results {
@@ -175,8 +197,9 @@
 .reader-results__heading {
   margin: 0 0 22px;
   padding-bottom: 15px;
-  border-bottom: 2px solid var(--color-navy);
+  border-bottom: 2px solid var(--color-primary);
   color: var(--color-navy);
+  font-family: Georgia, 'Noto Serif KR', 'Nanum Myeongjo', serif;
   font-size: clamp(1.2rem, 2vw, 1.55rem);
   letter-spacing: -0.035em;
 }
@@ -203,14 +226,14 @@
 .reader-result {
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  background: #fff;
+  border-radius: 2px;
+  background: #fffefa;
   transition: 180ms ease;
 }
 
 .reader-result:hover {
-  border-color: #b3c9d9;
-  box-shadow: 0 12px 30px rgb(16 42 67 / 7%);
+  border-color: #cba79a;
+  box-shadow: 4px 4px 0 #eadfce;
 }
 
 .reader-result__meta,
@@ -236,6 +259,7 @@
 .reader-result h3 {
   margin: 13px 0 10px;
   color: var(--color-navy);
+  font-family: Georgia, 'Noto Serif KR', 'Nanum Myeongjo', serif;
   font-size: clamp(1.12rem, 2vw, 1.45rem);
   line-height: 1.4;
   letter-spacing: -0.035em;
@@ -280,10 +304,10 @@
 .reader-preview {
   margin-bottom: 32px;
   padding: 20px 23px;
-  border: 1px solid #c8d9e6;
+  border: 1px solid #dbc8ad;
   border-left: 4px solid var(--color-primary);
-  border-radius: 8px;
-  background: var(--color-soft-blue);
+  border-radius: 2px;
+  background: #f9edda;
 }
 
 .reader-preview strong {
@@ -293,7 +317,7 @@
 
 .reader-preview p {
   margin: 7px 0 0;
-  color: #4b6679;
+  color: #655948;
   font-size: 0.84rem;
   line-height: 1.75;
   word-break: keep-all;
@@ -333,9 +357,9 @@
   min-height: 38px;
   padding: 0 15px;
   border: 1px solid var(--color-primary);
-  border-radius: 7px;
+  border-radius: 2px;
   color: var(--color-primary);
-  background: #fff;
+  background: #fffefa;
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
@@ -347,8 +371,14 @@
 .reader-page input:focus-visible,
 .reader-page select:focus-visible,
 .reader-page textarea:focus-visible {
-  outline: 3px solid rgb(139 182 217 / 70%);
+  outline: 3px solid rgb(182 83 66 / 55%);
   outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+  .reader-page__stamp {
+    display: none;
+  }
 }
 
 @media (max-width: 680px) {
@@ -372,7 +402,8 @@
 
   .reader-panel {
     padding: 21px;
-    border-radius: 12px;
+    border-radius: 2px;
+    box-shadow: 5px 5px 0 #eadfce;
   }
 
   .reader-search__row,

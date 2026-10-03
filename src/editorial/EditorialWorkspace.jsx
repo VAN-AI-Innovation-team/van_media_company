@@ -171,12 +171,23 @@ export default function EditorialWorkspace() {
     <main id="main-content" className="editorial-page">
       <div className="editorial-wrap">
         <header className="editorial-hero">
-          <div>
-            <p className="editorial-eyebrow">NEWSROOM / EDITORIAL DESK</p>
-            <h1>기자용 원고 작업실</h1>
-            <p>원고를 쓰고, 데스크 검수를 거쳐 승인과 예약 상태까지 확인하세요.</p>
+          <div className="editorial-hero__masthead" aria-hidden="true">
+            <span>VAN PRESS CLUB</span>
+            <span>STUDENT NEWSROOM · EDITORIAL DESK</span>
+            <span>ISSUE 01 / DEMO</span>
           </div>
-          <div className="editorial-demo-chip"><span /> 프론트 시연</div>
+          <div className="editorial-hero__content">
+            <div className="editorial-hero__copy">
+              <p className="editorial-eyebrow">우리의 시선으로 기록하는 오늘</p>
+              <h1>기자용 원고 작업실</h1>
+              <p>떠오른 이야기를 원고로 남기고, 동료의 검수를 거쳐 다음 호를 준비해 보세요.</p>
+            </div>
+            <div className="editorial-hero__aside">
+              <span className="editorial-hero__mark" aria-hidden="true">V.</span>
+              <div className="editorial-demo-chip"><span /> 프론트 시연</div>
+            </div>
+          </div>
+          <div className="editorial-hero__footer" aria-hidden="true"><span>FROM A SMALL DESK, FOR A BIGGER CONVERSATION.</span><span>✳ EDITION 01</span></div>
         </header>
 
         <div className="editorial-demo-notice" role="note">
@@ -187,6 +198,10 @@ export default function EditorialWorkspace() {
           <p className="editorial-storage-error" role="alert">브라우저 저장소를 사용할 수 없어 변경 사항이 새로고침 후 유지되지 않을 수 있습니다.</p>
         )}
 
+        <div className="editorial-section-heading">
+          <div><span className="editorial-kicker">ON THE DESK / 01</span><h2>편집실 한눈에</h2></div>
+          <p>지금 준비 중인 원고의 흐름</p>
+        </div>
         <section className="editorial-overview" aria-label="원고 현황">
           <div><span>작성 · 수정</span><strong>{counts.draft}</strong><small>원고 준비 중</small></div>
           <div><span>검수 대기</span><strong>{counts.inReview}</strong><small>데스크 확인 필요</small></div>
@@ -197,7 +212,7 @@ export default function EditorialWorkspace() {
         <div className="editorial-workspace">
           <aside className="editorial-sidebar" aria-label="원고 목록">
             <div className="editorial-sidebar__top">
-              <div><span className="editorial-kicker">MY STORIES</span><h2>원고 목록 <em>{drafts.length}</em></h2></div>
+              <div><span className="editorial-kicker">THE STORY FOLDER</span><h2>원고 목록 <em>{drafts.length}</em></h2></div>
               <button className="editorial-new-button" type="button" onClick={addDraft}>+ 새 원고</button>
             </div>
             <div className="editorial-draft-list">
@@ -224,7 +239,7 @@ export default function EditorialWorkspace() {
             {selected ? (
               <>
                 <div className="editorial-editor__head">
-                  <div><span className="editorial-kicker">STORY WORKSPACE</span><h2>원고 편집</h2><p>마지막 변경 {formatDate(selected.updatedAt)}</p></div>
+                  <div><span className="editorial-kicker">ON THE PAGE / 원고지</span><h2>원고 편집</h2><p>마지막 변경 {formatDate(selected.updatedAt)}</p></div>
                   <StatusBadge status={selected.status} />
                 </div>
 

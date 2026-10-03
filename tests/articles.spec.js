@@ -53,7 +53,7 @@ test('loading, server error, retry and empty state', async ({ page }) => {
   await page.unroute('**/api/articles?**')
   await page.route('**/api/articles?**', (route) => route.fulfill({ json: [] }))
   await page.getByRole('button', { name: '다시 시도' }).click()
-  await expect(page.getByRole('status')).toHaveText('아직 등록된 기사가 없습니다.')
+  await expect(page.getByRole('status')).toContainText('아직 등록된 기사가 없습니다.')
 })
 
 test('late Korean response cannot overwrite the English route', async ({ page }) => {

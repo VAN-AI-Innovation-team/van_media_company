@@ -246,7 +246,7 @@ function ArticleStory({ article }) {
   )
 }
 
-function ArticleItem({ article, listState, copy }) {
+function ArticleItem({ article, listState, copy, index }) {
   return (
     <article
       className="article-item"
@@ -260,7 +260,10 @@ function ArticleItem({ article, listState, copy }) {
       >
         <ArticleVisual article={article} />
         <div className="article-copy">
-          <span className="article-category">{article.category}</span>
+          <div className="article-label-row">
+            <span className="article-category">{article.category}</span>
+            <span className="article-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          </div>
           <h2>{article.title}</h2>
           <p className="article-summary">{article.summary}</p>
           <div className="article-meta">
@@ -564,11 +567,21 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
         </div>
 
         {!isRefreshing && <RequestNotice request={request} copy={copy} />}
-        {articlePage?.items.length === 0 && <p className="request-notice" role="status">{copy.noArticles}</p>}
+        {articlePage?.items.length === 0 && (
+          <div className="empty-edition" role="status">
+            <div className="empty-edition__mark" aria-hidden="true">V / N</div>
+            <div>
+              <p className="eyebrow">{copy.emptyEditionEyebrow}</p>
+              <h3>{copy.emptyEditionTitle}</h3>
+              <p>{copy.noArticles} {copy.emptyEditionDescription}</p>
+              <Link to={`${readerPrefix}/tips/`}>{copy.emptyEditionAction} <span aria-hidden="true">↗</span></Link>
+            </div>
+          </div>
+        )}
         <div className={`article-results${isRefreshing ? ' article-results--refreshing' : ''}`}>
           <div className={`article-collection article-collection--${viewMode}`} aria-busy={request.status === 'loading'} inert={isRefreshing}>
-            {articlePage?.items.map((article) => (
-              <ArticleItem key={article.id} article={article} listState={listState} copy={copy} />
+            {articlePage?.items.map((article, index) => (
+              <ArticleItem key={article.id} article={article} listState={listState} copy={copy} index={index} />
             ))}
           </div>
           {isRefreshing && (
@@ -795,7 +808,7 @@ export default function App() {
           <span className="brand-mark" aria-hidden="true">V</span>
           <span>
             <strong>VAN NEWS</strong>
-            <small>MEDIA PLATFORM</small>
+            <small>OUR NEWSROOM</small>
           </span>
         </Link>
         <div className="masthead-actions">

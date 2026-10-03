@@ -37,6 +37,10 @@ const messages = {
     loadFailed: '기사를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
     retry: '다시 시도',
     noArticles: '아직 등록된 기사가 없습니다.',
+    emptyEditionEyebrow: 'THE NEXT EDITION',
+    emptyEditionTitle: '다음 이야기를 기다리고 있습니다',
+    emptyEditionDescription: '새 기사가 도착하면 이곳에서 가장 먼저 만날 수 있습니다.',
+    emptyEditionAction: '함께 나눌 이야기 제보하기',
     noRelatedArticles: '함께 읽을 기사가 아직 없습니다.',
     articleCount: ({ totalItems, page, totalPages }) =>
       `총 ${totalItems}개의 기사 · ${page} / ${totalPages} 페이지`,
@@ -129,6 +133,10 @@ const messages = {
     loadFailed: 'We could not load the stories. Please try again shortly.',
     retry: 'Try again',
     noArticles: 'No stories have been published yet.',
+    emptyEditionEyebrow: 'THE NEXT EDITION',
+    emptyEditionTitle: 'The next story starts here',
+    emptyEditionDescription: 'New stories will appear here as soon as they are published.',
+    emptyEditionAction: 'Send us a story idea',
     noRelatedArticles: 'There are no related stories yet.',
     articleCount: ({ totalItems, page, totalPages }) =>
       `${totalItems} stories · Page ${page} of ${totalPages}`,

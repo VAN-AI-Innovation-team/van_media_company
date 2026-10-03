@@ -121,6 +121,7 @@ function ReaderLayout({ language, page, title, description, children }) {
     <main id="main-content" className="reader-page">
       <div className="reader-page__container">
         <Link className="reader-page__home" to={paths.home}>← {copy.home}</Link>
+        <span className="reader-page__stamp" aria-hidden="true">VAN<br />PRESS<br />CLUB</span>
         <header className="reader-page__header">
           <p className="reader-page__eyebrow">{copy.section}</p>
           <h1>{title}</h1>
