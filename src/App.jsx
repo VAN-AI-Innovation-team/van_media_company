@@ -247,9 +247,10 @@ function ArticleStory({ article }) {
 }
 
 function ArticleItem({ article, listState, copy, index }) {
+  const isLead = listState.viewMode === 'card' && index === 0
   return (
     <article
-      className="article-item"
+      className={`article-item${isLead ? ' article-item--lead' : ''}`}
       style={{ '--article-accent': article.accent }}
     >
       <Link
@@ -265,7 +266,7 @@ function ArticleItem({ article, listState, copy, index }) {
             <span className="article-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           </div>
           <h2>{article.title}</h2>
-          <p className="article-summary">{article.summary}</p>
+          <p className="article-summary">{isLead ? article.body?.[0] ?? article.summary : article.summary}</p>
           <div className="article-meta">
             <span>{article.author.name}</span>
             <span className="meta-divider" aria-hidden="true" />
@@ -529,13 +530,26 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
   return (
     <main id="main-content">
       <section className="intro" aria-labelledby="page-title">
-        <p className="eyebrow">{copy.latestStories}</p>
+        <p className="eyebrow">{copy.editionLabel}</p>
         <h1 id="page-title">
           {copy.heroTitle}
           <span>{copy.heroAccent}</span>
         </h1>
         <p className="intro-copy">{copy.heroDescription}</p>
       </section>
+
+      {viewMode === 'card' && articlePage?.items.length > 0 && (
+        <nav className="section-strip" aria-label={copy.sectionNavLabel}>
+          <strong>{copy.sectionIndex}</strong>
+          <div>
+            {articlePage.items.map((article) => (
+              <Link key={article.id} to={getArticleUrl(article.id, listState)} state={{ listUrl: getListUrl(listState) }}>
+                <span aria-hidden="true">●</span> {article.category}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
 
       <section className="articles" aria-labelledby="articles-title">
         <div className="article-toolbar">
@@ -747,6 +761,12 @@ export default function App() {
   const copy = getMessages(language)
   const listState = { language, page: currentPage, viewMode }
   const readerPrefix = language === 'en' ? '/en' : ''
+  const editionDate = new Date()
+  const editionDateValue = [
+    editionDate.getFullYear(),
+    String(editionDate.getMonth() + 1).padStart(2, '0'),
+    String(editionDate.getDate()).padStart(2, '0'),
+  ].join('-')
   const isEditorRoute = /^\/editor\/?$/.test(location.pathname)
   const navItems = [
     { to: getListUrl({ language, page: 1, viewMode: 'card' }), label: copy.latestNav, active: location.pathname === '/' || location.pathname === '/en' || location.pathname === '/en/' || location.pathname.startsWith(`${readerPrefix}/articles/`) },
@@ -803,12 +823,24 @@ export default function App() {
 
   return (
     <div className="site-shell">
+      <div className="news-ribbon">
+        <div>
+          <strong>VAN NEWS</strong>
+          <span>{copy.ribbonMessage}</span>
+        </div>
+      </div>
       <header className="masthead">
+        <div className="masthead-date">
+          <time dateTime={editionDateValue}>
+            {new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(editionDate)}
+          </time>
+          <small>{copy.mastheadEdition}</small>
+        </div>
         <Link className="brand" to={getListUrl(listState)} aria-label={copy.homeLabel}>
           <span className="brand-mark" aria-hidden="true">V</span>
           <span>
             <strong>VAN NEWS</strong>
-            <small>OUR NEWSROOM</small>
+            <small>{copy.mastheadTagline}</small>
           </span>
         </Link>
         <div className="masthead-actions">

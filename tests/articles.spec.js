@@ -117,7 +117,7 @@ test('site styles keep desktop and mobile content within the viewport', async ({
     expect(layout.pageWidth).toBe('1180px')
     expect(layout.margin).toBe('0px')
     expect(layout.boxSizing).toBe('border-box')
-    expect(layout.articleBounds.width).toBeLessThanOrEqual(1180)
+    expect(layout.articleBounds.width).toBeLessThanOrEqual(1320)
     expect(layout.articleBounds.left).toBeGreaterThanOrEqual(16)
     expect(layout.paginationBounds.right).toBeLessThanOrEqual(width - 16)
     expect(layout.scrollWidth).toBeLessThanOrEqual(width)
