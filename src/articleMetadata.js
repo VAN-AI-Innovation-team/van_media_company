@@ -83,6 +83,7 @@ function setStructuredArticle(article, url, language, imageUrl) {
 }
 
 export function applyArticleMetadata(article, requestedLanguage = 'ko') {
+  removeMeta('name', 'robots')
   const language = normalizeLanguage(requestedLanguage)
   const copy = getMessages(language)
   const url = new URL(window.location.pathname, window.location.origin).href
@@ -121,6 +122,7 @@ export function applyArticleMetadata(article, requestedLanguage = 'ko') {
 }
 
 export function applyNotFoundMetadata(requestedLanguage = 'ko') {
+  removeMeta('name', 'robots')
   const language = normalizeLanguage(requestedLanguage)
   const copy = getMessages(language)
   const url = new URL(window.location.pathname, window.location.origin).href
@@ -145,6 +147,7 @@ export function applyNotFoundMetadata(requestedLanguage = 'ko') {
 }
 
 export function resetArticleMetadata(requestedLanguage = 'ko') {
+  removeMeta('name', 'robots')
   const language = normalizeLanguage(requestedLanguage)
   const copy = getMessages(language)
   const homeUrl = new URL(language === 'en' ? '/en/' : '/', window.location.origin).href
@@ -161,6 +164,32 @@ export function resetArticleMetadata(requestedLanguage = 'ko') {
   setMeta('name', 'twitter:card', 'summary')
   setMeta('name', 'twitter:title', copy.defaultTitle)
   setMeta('name', 'twitter:description', copy.defaultDescription)
+  clearSocialImageMetadata()
+  removeMeta('property', 'article:published_time')
+  removeMeta('property', 'article:section')
+  document.head.querySelector('#article-structured-data')?.remove()
+}
+
+export function applySectionMetadata(title, requestedLanguage = 'ko', { noindex = false } = {}) {
+  const language = normalizeLanguage(requestedLanguage)
+  const copy = getMessages(language)
+  const url = new URL(window.location.pathname, window.location.origin).href
+  const pageTitle = `${title} | VAN NEWS`
+
+  document.title = pageTitle
+  setCanonical(url)
+  setMeta('name', 'description', copy.defaultDescription)
+  setMeta('property', 'og:type', 'website')
+  setMeta('property', 'og:site_name', 'VAN NEWS')
+  setMeta('property', 'og:locale', copy.locale)
+  setMeta('property', 'og:title', pageTitle)
+  setMeta('property', 'og:description', copy.defaultDescription)
+  setMeta('property', 'og:url', url)
+  setMeta('name', 'twitter:card', 'summary')
+  setMeta('name', 'twitter:title', pageTitle)
+  setMeta('name', 'twitter:description', copy.defaultDescription)
+  if (noindex) setMeta('name', 'robots', 'noindex, nofollow')
+  else removeMeta('name', 'robots')
   clearSocialImageMetadata()
   removeMeta('property', 'article:published_time')
   removeMeta('property', 'article:section')

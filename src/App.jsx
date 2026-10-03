@@ -17,6 +17,7 @@ import {
 import {
   applyArticleMetadata,
   applyNotFoundMetadata,
+  applySectionMetadata,
   resetArticleMetadata,
 } from './articleMetadata.js'
 import { getMessages, normalizeLanguage } from './i18n.js'
@@ -28,6 +29,8 @@ import {
   supportsNativeShare,
 } from './share.js'
 import MediaOutreachPage from './MediaOutreachPage.jsx'
+import EditorialWorkspace from './editorial/EditorialWorkspace.jsx'
+import { NewsletterPage, SearchPage, TipPage } from './reader/ReaderPages.jsx'
 import './App.css'
 
 function getPageNumber(value) {
@@ -501,6 +504,7 @@ function RelatedStories({ articleId, language, listState, listUrl, copy }) {
 
 function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setViewMode }) {
   const copy = getMessages(language)
+  const readerPrefix = language === 'en' ? '/en' : ''
   const load = useCallback(async (signal) => {
     if (viewMode === 'list') return getArticlePage({ page: currentPage, language, signal })
     const items = await getAllArticles(language, { signal })
@@ -583,6 +587,27 @@ function ArticleListPage({ language, currentPage, setCurrentPage, viewMode, setV
             pending={isRefreshing}
           />
         )}
+      </section>
+
+      <section className="reader-callouts" aria-labelledby="reader-callouts-title">
+        <div className="reader-callouts__heading">
+          <p className="eyebrow">{copy.readerActionsEyebrow}</p>
+          <h2 id="reader-callouts-title">{copy.readerActionsTitle}</h2>
+        </div>
+        <div className="reader-callouts__grid">
+          <Link to={`${readerPrefix}/newsletter/`}>
+            <span>{copy.newsletterNav}</span>
+            <strong>{copy.newsletterCallout}</strong>
+            <small>{copy.newsletterCalloutDescription}</small>
+            <span aria-hidden="true">↗</span>
+          </Link>
+          <Link to={`${readerPrefix}/tips/`}>
+            <span>{copy.tipsNav}</span>
+            <strong>{copy.tipsCallout}</strong>
+            <small>{copy.tipsCalloutDescription}</small>
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
       </section>
     </main>
   )
@@ -708,6 +733,14 @@ export default function App() {
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'card'
   const copy = getMessages(language)
   const listState = { language, page: currentPage, viewMode }
+  const readerPrefix = language === 'en' ? '/en' : ''
+  const isEditorRoute = /^\/editor\/?$/.test(location.pathname)
+  const navItems = [
+    { to: getListUrl({ language, page: 1, viewMode: 'card' }), label: copy.latestNav, active: location.pathname === '/' || location.pathname === '/en' || location.pathname === '/en/' || location.pathname.startsWith(`${readerPrefix}/articles/`) },
+    { to: `${readerPrefix}/search/`, label: copy.searchNav, active: location.pathname.startsWith(`${readerPrefix}/search`) },
+    { to: `${readerPrefix}/newsletter/`, label: copy.newsletterNav, active: location.pathname.startsWith(`${readerPrefix}/newsletter`) },
+    { to: `${readerPrefix}/tips/`, label: copy.tipsNav, active: location.pathname.startsWith(`${readerPrefix}/tips`) },
+  ]
 
   const updateSearch = (updates) => {
     const next = new URLSearchParams(searchParams)
@@ -744,6 +777,17 @@ export default function App() {
     document.documentElement.lang = copy.htmlLanguage
   }, [copy.htmlLanguage])
 
+  useEffect(() => {
+    const section = location.pathname.replace(/^\/en(?=\/|$)/, '').replace(/\/$/, '')
+    const titles = {
+      '/search': copy.searchNav,
+      '/newsletter': copy.newsletterNav,
+      '/tips': copy.tipsNav,
+      '/editor': copy.editorNav,
+    }
+    if (titles[section]) applySectionMetadata(titles[section], language, { noindex: section === '/editor' })
+  }, [location.pathname, language, copy.searchNav, copy.newsletterNav, copy.tipsNav, copy.editorNav])
+
   return (
     <div className="site-shell">
       <header className="masthead">
@@ -756,13 +800,26 @@ export default function App() {
         </Link>
         <div className="masthead-actions">
           <p>{copy.newsroom}</p>
-          <LanguageSwitch
+          {!isEditorRoute && <LanguageSwitch
             language={language}
             onLanguageChange={changeLanguage}
             copy={copy}
-          />
+          />}
         </div>
       </header>
+
+      <nav className="site-nav" aria-label={copy.siteNavigationLabel}>
+        <div className="site-nav__inner">
+          {navItems.map((item) => (
+            <Link key={item.to} to={item.to} aria-current={item.active ? 'page' : undefined}>
+              {item.label}
+            </Link>
+          ))}
+          <Link className="site-nav__editor" to="/editor/" aria-current={isEditorRoute ? 'page' : undefined}>
+            {copy.editorNav} <small>{copy.frontendDemo}</small>
+          </Link>
+        </div>
+      </nav>
 
       <Routes>
         <Route
@@ -799,10 +856,23 @@ export default function App() {
         />
         <Route path="/media-outreach" element={<MediaOutreachPage />} />
         <Route path="/en/media-outreach" element={<MediaOutreachPage />} />
+        <Route path="/search" element={<SearchPage language={language} />} />
+        <Route path="/en/search" element={<SearchPage language={language} />} />
+        <Route path="/newsletter" element={<NewsletterPage language={language} />} />
+        <Route path="/en/newsletter" element={<NewsletterPage language={language} />} />
+        <Route path="/tips" element={<TipPage language={language} />} />
+        <Route path="/en/tips" element={<TipPage language={language} />} />
+        <Route path="/editor" element={<EditorialWorkspace />} />
       </Routes>
 
       <footer>
         <span>VAN NEWS</span>
+        <nav aria-label={copy.footerNavigationLabel}>
+          <Link to={`${readerPrefix}/search/`}>{copy.searchNav}</Link>
+          <Link to={`${readerPrefix}/newsletter/`}>{copy.newsletterNav}</Link>
+          <Link to={`${readerPrefix}/tips/`}>{copy.tipsNav}</Link>
+          <Link to="/editor/">{copy.editorNav} · {copy.frontendDemo}</Link>
+        </nav>
       </footer>
     </div>
   )
